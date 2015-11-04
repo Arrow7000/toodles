@@ -28,7 +28,7 @@ app.get('*', function(req, res) {
 });
 
 
-server.listen(5000);
+server.listen(process.env.PORT);
 
 
 
@@ -59,34 +59,12 @@ server.listen(5000);
 
 // app.set('port', (process.env.PORT || 5000));
 
+// console.log(process.env);
+
 // app.get('*', function(req, res) {
 // 	res.sendFile(__dirname + req.url);
 // });
 
 // app.listen(app.get('port'), function() {
 // 	console.log('Node app is running on port', app.get('port'));
-// });
-
-
-
-
-
-
-// By the book
-
-// var app = require('express')();
-// var server = require('http').Server(app);
-// var io = require('socket.io')(server);
-
-// server.listen(80);
-
-// app.get('/', function (req, res) {
-//   res.sendfile(__dirname + '/index.html');
-// });
-
-// io.on('connection', function (socket) {
-//   socket.emit('news', { hello: 'world' });
-//   socket.on('my other event', function (data) {
-//     console.log(data);
-//   });
 // });
