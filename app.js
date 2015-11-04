@@ -27,6 +27,7 @@
 // 	res.sendFile(__dirname + req.url);
 // });
 
+
 // server.listen(8080);
 
 
@@ -39,7 +40,7 @@ var express = require('express');
 var server = require('http').Server(app);
 var app = express();
 var io = require('socket.io')(server);
-
+console.log(app);
 
 
 io.on('connection', function(client) {
@@ -65,6 +66,6 @@ app.get('*', function(req, res) {
 	res.sendFile(__dirname + req.url);
 });
 
-app.listen(app.get('port'), function() {
+server.listen(app.get('port'), function() {
 	console.log('Node app is running on port', app.get('port'));;
 });
