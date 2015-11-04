@@ -6,15 +6,14 @@ var redis = require('redis');
 // var redisClient = redis.createClient();
 
 io.on('connection', function(client) {
-	console.log('Client connected...');
-	client.emit('messages', {
-		hello: 'world'
-	});
 
+	console.log('Client connected...');
+	
 	client.on('save', function(data) {
 		console.log('Saved: ' + data.text);
 		client.emit('saved', data);
 	});
+	
 });
 
 
@@ -27,8 +26,9 @@ app.get('*', function(req, res) {
 	res.sendFile(__dirname + req.url);
 });
 
+var port = (process.env.PORT || 5000);
 
-server.listen(process.env.PORT);
+server.listen(port);
 
 
 

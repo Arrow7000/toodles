@@ -40,8 +40,13 @@ $(document).ready(function() {
 
 	// NodeJS & Socket.io experiments
 	var server = io.connect(window.location.href);
-	server.on('messages', function(data) {
-		alert(data.hello);
+	server.on('connect', function(client) {
+		console.log('Now connected!');
+		$('#connection-status').text('Connected :)');
+	});
+	server.on('disconnect', function(client) {
+		console.log('Disconnected :(');
+		$('#connection-status').text('Disconnected :(');
 	});
 
 	$(document).on('blur', '.item-label', function(e) {
