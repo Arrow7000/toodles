@@ -1,0 +1,19 @@
+{
+  "name": "todo",
+  "version": "1.0.0",
+  "description": "To do app",
+  "main": "app.js",
+  "directories": {
+    "doc": "doc"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Aron Adler",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.13.3",
+    "redis": "^2.3.0",
+    "socket.io": "^1.3.7"
+  }
+}
