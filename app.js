@@ -3,17 +3,24 @@ var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
 var redis = require('redis');
-var redisClient = redis.createClient();
+// var redisClient = redis.createClient();
+require('handlebars');
+
+
+
+var itemTest = {
+	title: "Buy milk"
+}
 
 io.on('connection', function(client) {
 
 	console.log('Client connected...');
-	
+
 	client.on('save', function(data) {
 		console.log('Saved: ' + data.text);
 		client.emit('saved', data);
 	});
-	
+
 });
 
 

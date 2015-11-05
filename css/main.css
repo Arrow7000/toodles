@@ -117,9 +117,7 @@ html {
   transform-style: preserve-3d;
   height: 250px;
 }
-.header h1,
-.header h2,
-.header h3 {
+.header div {
   position: relative;
   top: 50%;
   transform: translateY(-50%);
@@ -129,11 +127,18 @@ html {
   margin-top: 50px;
   height: 100px;
 }
+h3#connection-status.connecting {
+  color: #00f;
+}
+h3#connection-status.connected {
+  color: #008000;
+}
+h3#connection-status.disconnected {
+  color: #f00;
+}
 .items-container .item {
-  margin-bottom: 25px;
   width: 100%;
   color: #fefefe;
-  transition: all 0.5s ease-out;
   display: block;
   text-align: center;
   overflow: hidden;
@@ -141,42 +146,55 @@ html {
 .items-container .item .item-section {
   padding-top: 25px;
   padding-bottom: 25px;
-  overflow-x: hidden;
+  overflow: hidden;
+  max-height: 100px;
+  margin-bottom: 25px;
+  transition: background-color 0.5s ease-in, width 0.5s ease-in, padding-left 0.5s ease-in, padding-right 0.5s ease-in, max-height 0.5s 0.5s ease-in, padding-top 0.5s 0.5s ease-in, padding-bottom 0.5s 0.5s ease-in, margin-bottom 0.6s 0.5s ease-in;
 }
 .items-container .item .item-section.item-label {
   background-color: #639;
   width: 65%;
   float: left;
   text-align: left;
-  padding: 25px;
+  padding-top: 25px;
+  padding-bottom: 25px;
+  padding-right: 25px;
+  padding-left: 25px;
   white-space: nowrap;
-  transition: all 0.5s ease-out;
 }
-.items-container .item .item-section.item-label:empty {
-  background-color: rgba(102,51,153,0.25);
+.items-container .item .item-section.item-label:empty:last-child:before {
+  content: "Add an item";
+  display: block;
+}
+.items-container .item .item-section.item-label:empty:before {
+  content: "Add an item";
+  display: block;
 }
 .items-container .item .item-section.item-tick {
   width: 25%;
   background-color: #26a65b;
   float: left;
-  transition: all 0.5s ease-out;
 }
 .items-container .item .item-section.item-del {
   width: 10%;
   background-color: #efefef;
   background-color: #d2527f;
   float: left;
-  transition: all 0.5s ease-out;
 }
-.items-container .item.ticked {
-  animation: tickItem 0.75s ease-out;
-  max-height: 0;
-  margin-bottom: 0;
+.items-container .item.empty .item-label {
+  width: 100%;
+  background-color: rgba(102,51,153,0.25);
+}
+.items-container .item.empty .item-tick {
+  width: 0;
+}
+.items-container .item.empty .item-del {
+  width: 0;
 }
 .items-container .item.ticked .item-section {
-  animation: tickItemSection 0.75s ease-out;
   max-height: 0;
-  overflow-y: hidden;
+  padding: 0;
+  margin-bottom: 0;
 }
 .items-container .item.ticked .item-label {
   width: 0;
@@ -189,6 +207,11 @@ html {
 .items-container .item.ticked .item-del {
   width: 0;
 }
+.items-container .item.deleted .item-section {
+  max-height: 0;
+  padding: 0;
+  margin-bottom: 0;
+}
 .items-container .item.deleted .item-label {
   width: 0;
   padding-right: 0;
@@ -199,15 +222,6 @@ html {
 }
 .items-container .item.deleted .item-del {
   width: 100%;
-}
-.items-container .item.empty .item-label {
-  width: 100%;
-}
-.items-container .item.empty .item-tick {
-  width: 0;
-}
-.items-container .item.empty .item-del {
-  width: 0;
 }
 .items-container.completed {
   margin-bottom: 150px;

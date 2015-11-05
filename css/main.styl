@@ -147,9 +147,7 @@ body {
     -moz-transform-style: preserve-3d;
     transform-style: preserve-3d;
     height 250px;
-    h1,
-    h2,
-    h3 {
+    div {
         position: relative;
         top: 50%;
         transform: translateY(-50%);
@@ -161,88 +159,118 @@ body {
     }
 }
 
+h3#connection-status {
+    &.connecting {
+        color blue;
+    }
+    &.connected {
+        color green;
+    }
+    &.disconnected {
+        color red;
+    }
+}
+
 .items-container {
     .item {
-        margin-bottom 25px;
+        // margin-bottom 25px;
         width 100%;
         color: #fefefe;
-        transition: all 0.5s ease-out;
+        // transition: all 0.5s ease-out;
         display block;
         text-align center;
         overflow: hidden;
+        // All item sections
         .item-section {
             padding-top: 25px;
             padding-bottom: 25px;
-            overflow-x: hidden;
+            overflow: hidden;
+            max-height 100px;
+            margin-bottom 25px;
+            transition: background-color 0.5s ease-in, width 0.5s ease-in, padding-left 0.5s ease-in, padding-right 0.5s ease-in, max-height 0.5s 0.5s ease-in, padding-top 0.5s 0.5s ease-in, padding-bottom 0.5s 0.5s ease-in, margin-bottom 0.6s 0.5s ease-in;
             &.item-label {
                 background-color $item-label-color;
                 width 65%;
                 float: left;
                 text-align left;
-                padding 25px;
+                padding-top 25px;
+                padding-bottom 25px;
+                padding-right 25px;
+                padding-left 25px;
                 white-space: nowrap;
-                transition: all 0.5s ease-out;
                 &:empty {
-                    background-color alpha($item-label-color, 0.25);
+                    &:last-child {
+                        &:before {
+                            content: "Add an item";
+                            display: block;
+                        }
+                    }
+                    &:before {
+                        content: "Add an item";
+                        display: block;
+                    }
                 }
             }
             &.item-tick {
                 width 25%;
                 background-color #26A65B;
                 float: left;
-                transition: all 0.5s ease-out;
             }
             &.item-del {
                 width 10%;
                 background-color $page-back;
                 background-color #D2527F;
                 float: left;
-                transition: all 0.5s ease-out;
-            }
-        }
-        &.ticked {
-            animation: tickItem 0.75s ease-out //cubic-bezier(.08,1.1,.47,.89);
-            max-height: 0;
-            margin-bottom: 0;
-            .item-section {
-                animation: tickItemSection 0.75s ease-out //cubic-bezier(.08,1.1,.47,.89);
-                max-height: 0;
-                overflow-y hidden;
-            }
-            .item-label {
-                width 0;
-                padding-right 0;
-                padding-left 0;
-            }
-            .item-tick {
-                width 100%;
-            }
-            .item-del {
-                width 0;
-            }
-        }
-        &.deleted {
-            .item-label {
-                width 0;
-                padding-right 0;
-                padding-left 0;
-            }
-            .item-tick {
-                width 0;
-            }
-            .item-del {
-                width 100%;
             }
         }
         &.empty {
             .item-label {
-                width 100%
+                width 100%;
+                background-color alpha($item-label-color, 0.25);
             }
             .item-tick {
                 width 0;
             }
             .item-del {
                 width 0;
+            }
+        }
+        // Ticked item sections
+        &.ticked {
+            .item-section {
+                max-height: 0;
+                padding 0;
+                margin-bottom 0;
+            }
+            .item-label {
+                width 0;
+                padding-right 0;
+                padding-left 0;
+            }
+            .item-tick {
+                width 100%;
+            }
+            .item-del {
+                width 0;
+            }
+        }
+        // Deleted item sections
+        &.deleted {
+            .item-section {
+                max-height: 0;
+                padding 0;
+                margin-bottom 0;
+            }
+            .item-label {
+                width 0;
+                padding-right 0;
+                padding-left 0;
+            }
+            .item-tick {
+                width 0;
+            }
+            .item-del {
+                width 100%;
             }
         }
     }
