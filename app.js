@@ -3,7 +3,7 @@ var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
 var redis = require('redis');
-// var redisClient = redis.createClient();
+var redisClient = redis.createClient();
 
 io.on('connection', function(client) {
 
