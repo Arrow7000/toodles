@@ -2,17 +2,12 @@ var express = require('express');
 var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
-var redis = require('redis');
-if (process.env.REDISTOGO_URL) {
-	// TODO: redistogo connection
-	var redis = require("redis").createClient();
-} else {
-	var redis = require("redis").createClient("18539", "ec2-54-83-199-200.compute-1.amazonaws.com");
-}
+var redis = require("redis").createClient();
+redis.auth('foobared');
 require('handlebars');
 
 redis.on('connect', function() {
-	console.log('Connected to Redis');
+	console.log('Fucking finally connected to Redis.');
 })
 
 var itemTest = {
