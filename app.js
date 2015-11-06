@@ -5,8 +5,9 @@ var io = require('socket.io')(server);
 var redis = require('redis');
 if (process.env.REDISTOGO_URL) {
 	// TODO: redistogo connection
-} else {
 	var redis = require("redis").createClient();
+} else {
+	var redis = require("redis").createClient("18539", "ec2-54-83-199-200.compute-1.amazonaws.com");
 }
 require('handlebars');
 
