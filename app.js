@@ -2,9 +2,17 @@ var express = require('express');
 var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
-var redis = require("redis").createClient();
-redis.auth('foobared');
 require('handlebars');
+
+if (process.platform == 'win32') {
+	console.log("Windows!");
+	var redis = require("redis").createClient();
+	redis.auth('foobared');
+} else {
+	console.log('Now windows!');
+	var redis = require('redis').createClient(process.env.REDIS_URL);
+}
+
 
 redis.on('connect', function() {
 	console.log('Fucking finally connected to Redis.');
