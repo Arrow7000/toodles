@@ -9,13 +9,13 @@ var mongodb = require('mongodb');
 
 
 var mongclient = mongodb.MongoClient;
-var mongurl = "mongodb://heroku_bksj92g6:purplera1n@ds051524.mongolab.com:51524/heroku_bksj92g6";
+var mongurl = "mongodb://test_user:purplera1n@ds051524.mongolab.com:51524/heroku_bksj92g6";
 
 mongclient.connect(mongurl, function(err, db) {
 	if (err) {
 		console.log("Can't connect to MongoDB. Error: ", err);
 	} else {
-		console.log("Connection to MongoDB established :). URL: ", mongurl);
+		console.log("Connection to MongoDB established. URL: ", mongurl);
 
 
 
