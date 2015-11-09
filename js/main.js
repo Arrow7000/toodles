@@ -117,6 +117,10 @@ $(document).ready(function() {
 		console.log('Save of "' + data.text + '" successful!');
 	});
 
+	server.on('newitem', function(data) {
+		console.log(data);
+	});
+
 
 
 
@@ -129,30 +133,30 @@ $(document).ready(function() {
 	// What happens every time user presses a key (should be invoked above)
 	function typeEvent(that) {
 		typeCount++;
-		console.log(typeCount);
+		// console.log(typeCount);
 		var parent = $(that).parent();
 		if ($(that).text().length <= 0) {
-			console.log('No text');
+			// console.log('No text');
 			// what happens when field doesn't have text in it
 			parent.addClass('empty');
 			if (parent.is(':last-child')) {
 
 			} else if (parent.next().is(':last-child')) {
-				console.log('is new item (no text)');
+				// console.log('is new item (no text)');
 				// If this is the last item before the newly generated empty field
 				parent.next().remove();
 			} else {
-				console.log('Is existing item');
+				// console.log('Is existing item');
 				// If this is not the last item in the list
 				parent.addClass('deleted');
 				focusNext(parent);
 			}
 		} else {
-			console.log('Has text');
+			// console.log('Has text');
 			// what happens when field has text in it
 			$(that).parent().removeClass('empty deleted');
 			if (parent.is(':last-child')) {
-				console.log('Is new item (has text)');
+				// console.log('Is new item (has text)');
 				itemContainer.append(template(emptyItem));
 				itemContainer.find(':last-child').addClass('empty').find('.item-label').attr('contenteditable', 'true');
 			}
