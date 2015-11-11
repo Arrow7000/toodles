@@ -31,39 +31,26 @@ var template = Handlebars.compile(itemHTML);
 
 $(document).ready(function() {
 
-
-
 	// Variable assignment for speedier DOM element grabbing
 	var itemContainer = $("#item-container");
 	var completedItemContainer = $("#completed-item-container");
 
 
 
-	// // Renders all current items to page
-	// for (var i = 0; i < itemsList.length; i++) {
-	// 	itemContainer.append(template(itemsList[i]));
-	// }
 
 
 
-
-
-
-
-
-
-
-
-	// NodeJS & Socket.io: sending items to the server
+	// Sets server location
 	var server = io.connect(window.location.href);
+
 	// Connect event
 	server.on('connect', function(client) {
 		console.log('Now connected!');
 		// Changes status to display 'connected'
 		$('#connection-status').removeClass().addClass('connected').text('Connected');
 
-		// Item load event, should happen on connection
-		server.on('itemLoad', function(dbItems) {
+		// Item load event, to happen on connection
+		server.on('pageLoadItemLoad', function(dbItems) {
 			dbItemsArray = dbItems.list;
 			console.log('dbItemsArray: ', dbItemsArray);
 
@@ -83,14 +70,18 @@ $(document).ready(function() {
 				completedItemContainer.find(':last-child>.item-label').attr('contenteditable', 'false');
 			}
 
+			// Adds item IDs as attributes (IDs taken from MongoDB)
+			for (var i = 0; i < itemContainer.find('.item').length - 1; i++) {
+				itemContainer.find('.item:nth-child(' + (i + 1) + ')').attr('data-item-id', dbItemsArray[i]['_id']).attr('data-item-stored', true);
 
-
+			}
 
 			// Makes items editable
-			for (var i = 0; i < itemContainer.find('.item').length; i++) {
-				itemContainer.find('.item>.item-label').attr('contenteditable', 'true');
-			}
+			itemContainer.find('.item').find('.item-label').attr('contenteditable', 'true');
+
+
 		});
+
 
 
 
@@ -119,25 +110,33 @@ $(document).ready(function() {
 	// Blur item field event
 	$(document).on('blur', '.item-label', function(e) {
 		var content = $(this).text();
+		var item = $(this).parent();
 		if (content.length > 0) {
-			console.log('Saving item: "' + content + '"...');
+			if (item.attr('data-item-stored') === true) {
+				console.log('Just editing :3');
+			} else {
+				console.log("Saving new item: ", content);
+				console.log(item.attr('data-item-stored'));
 
-			// Item save event
-			server.emit('save', {
-				title: content
-			});
+				item.attr('data-item-stored', true);
+
+
+				// Item save event
+				server.emit('newItemSave', {
+					title: content
+				});
+			}
+
 		}
+
+		server.on('newItemSaved', function(data) {
+			console.log('Save of "' + data.title + '" successful!');
+			item.attr('data-item-id');
+		});
 
 	});
 
 	// Feedback from server that item save is successful
-	server.on('saved', function(data) {
-		console.log('Save of "' + data.title + '" successful!');
-	});
-
-	server.on('newitem', function(data) {
-		console.log(data);
-	});
 
 
 
@@ -145,7 +144,8 @@ $(document).ready(function() {
 
 
 
-	///// Button tap events 
+
+	///// Button tap events
 
 	// Tap 'tick' button
 	$(document).on('tap', '.item-tick', function(e) {
@@ -220,3 +220,29 @@ $(document).ready(function() {
 	}
 
 });
+
+
+/* Actions
+To server:
+	newItemSave
+	itemEdit
+	itemTick
+	itemDelete
+
+From server to client:
+	Action completes:
+		newItemSaved
+		itemEdited
+		itemTicked
+		itemDeleted
+
+	pageLoadItemLoad
+
+	Potential multicoop acts:
+
+
+
+
+
+
+*/

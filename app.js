@@ -8,10 +8,9 @@ require('handlebars');
 // MongoDB prerequisites
 var mongodb = require('mongodb');
 var mongclient = mongodb.MongoClient;
-var mongurl = "mongodb://test_user:purplera1n@ds051524.mongolab.com:51524/heroku_bksj92g6";
+var mongurl = "mongodb://heroku_bksj92g6:77ehmrlo36tj9hl2jae87kdohv@ds051524.mongolab.com:51524/heroku_bksj92g6";
 
-var itemCol, userCol, database;
-var dbItems;
+var itemCol, userCol, database, dbItems;
 
 
 
@@ -36,7 +35,7 @@ io.on('connection', function(client) {
 			itemCol.find({}).toArray(function(err, docs) {
 				dbItems = docs;
 				console.log('Item fetch success: ', docs);
-				client.emit('itemLoad', {
+				client.emit('pageLoadItemLoad', {
 					list: dbItems
 				});
 
@@ -48,14 +47,13 @@ io.on('connection', function(client) {
 
 
 			// Item save event
-			client.on('save', function(data) {
-				console.log('Item submitted: ' + data.title);
-				// insert(data);
+			client.on('newItemSave', function(data) {
+				console.log('Item submitted: ', data);
 
-				itemCol.insertOne(data, function(err, result) {
+				itemCol.insert(data, function(err, result) {
 					console.log(result.ops);
-					console.log('Saved: ' + data.title);
-					client.emit('saved', data);
+					console.log('Saved: ', data);
+					client.emit('newItemSaved', data);
 				});
 			});
 
