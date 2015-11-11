@@ -5,24 +5,73 @@ var server = require('http').createServer(app);
 var io = require('socket.io')(server);
 require('handlebars');
 
+// MongoDB prerequisites
 var mongodb = require('mongodb');
-
-
 var mongclient = mongodb.MongoClient;
 var mongurl = "mongodb://test_user:purplera1n@ds051524.mongolab.com:51524/heroku_bksj92g6";
 
-mongclient.connect(mongurl, function(err, db) {
-	if (err) {
-		console.log("Can't connect to MongoDB. Error: ", err);
-	} else {
-		console.log("Connection to MongoDB established. URL: ", mongurl);
+var itemCol, userCol, database;
+var dbItems;
 
 
 
-		db.close();
-	}
+// Client connection event and content
+io.on('connection', function(client) {
+	console.log('Client connected...');
+
+	// Connect to MongoDB
+	mongclient.connect(mongurl, function(err, db) {
+		database = db;
+		if (err) {
+			console.log("Can't connect to MongoDB. Error: ", err);
+		} else {
+			console.log("Connection to MongoDB established.");
+			// Set collections
+			itemCol = db.collection('items');
+			userCol = db.collection('users');
+
+
+
+
+			itemCol.find({}).toArray(function(err, docs) {
+				dbItems = docs;
+				console.log('Item fetch success: ', docs);
+				client.emit('itemLoad', {
+					list: dbItems
+				});
+
+			});
+
+
+
+
+
+
+			// Item save event
+			client.on('save', function(data) {
+				console.log('Item submitted: ' + data.title);
+				// insert(data);
+
+				itemCol.insertOne(data, function(err, result) {
+					console.log(result.ops);
+					console.log('Saved: ' + data.title);
+					client.emit('saved', data);
+				});
+			});
+
+
+
+
+
+
+
+		}
+	});
+	client.on('disconnect', function() {
+		// Stuff to do on client disconnection event
+		console.log("Client disconnected.");
+	});
 });
-
 
 
 
@@ -37,16 +86,7 @@ var itemTest = {
 
 
 
-io.on('connection', function(client) {
 
-	console.log('Client connected...');
-
-	client.on('save', function(data) {
-		console.log('Saved: ' + data.text);
-		client.emit('saved', data);
-	});
-
-});
 
 
 app.use("/", express.static(__dirname + "/"));
@@ -59,5 +99,5 @@ app.get('*', function(req, res) {
 var port = (process.env.PORT || 5000);
 
 server.listen(port, function() {
-	console.log('Server running...');
+	console.log('Server now running...');
 });
