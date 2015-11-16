@@ -8,6 +8,7 @@ require('handlebars');
 // MongoDB prerequisites
 var mongodb = require('mongodb');
 var mongclient = mongodb.MongoClient;
+var ObjectID = mongodb.ObjectID;
 var mongurl = "mongodb://heroku_bksj92g6:77ehmrlo36tj9hl2jae87kdohv@ds051524.mongolab.com:51524/heroku_bksj92g6";
 
 var itemCol, userCol, database, dbItems;
@@ -32,7 +33,9 @@ io.on('connection', function(client) {
 
 
 
-			itemCol.find({}).toArray(function(err, docs) {
+			itemCol.find({
+				// all - filtering will happen at client
+			}).toArray(function(err, docs) {
 				dbItems = docs;
 				console.log('Item fetch success: ', docs);
 				client.emit('pageLoadItemLoad', {
@@ -50,17 +53,54 @@ io.on('connection', function(client) {
 			client.on('newItemSave', function(data) {
 				console.log('Item submitted: ', data);
 
-				itemCol.insert(data, function(err, result) {
-					console.log(result.ops);
+				itemCol.insert({
+					title: data.title,
+					completed: false
+				}, function(err, result) {
+					// console.log(result.ops);
 					console.log('Saved: ', data);
 					client.emit('newItemSaved', data);
 				});
 			});
 
+			client.on('itemEdit', function(data) {
+				itemCol.updateOne({
+					_id: ObjectID(data._id)
+				}, {
+					$set: {
+						title: data.title
+					}
+				}, function(err, result) {
+					if (err) {
+						console.log("Error", err);
+					} else {
+						console.log("item updated.");
+						client.emit('itemEdited', data);
+					}
+				});
+			});
 
+			client.on('itemDelete', function(data) {
+				itemCol.deleteOne({
+					_id: ObjectID(data._id)
+				}, function() {
+					console.log("Item " + data.title + " deleted.");
+					client.emit('itemDeleted', data);
+				});
+			});
 
-
-
+			client.on('itemTick', function(data) {
+				itemCol.updateOne({
+					_id: ObjectID(data._id)
+				}, {
+					$set: {
+						completed: true
+					}
+				}, function() {
+					console.log("Item " + data.title + " ticked.");
+					client.emit('itemTicked', data);
+				});
+			});
 
 
 		}
