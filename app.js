@@ -36,11 +36,11 @@ io.on('connection', function(client) {
 			itemCol.find({
 				// all - filtering will happen at client
 			}).toArray(function(err, docs) {
-				dbItems = docs;
-				console.log('Item fetch success: ', docs);
 				client.emit('pageLoadItemLoad', {
 					list: dbItems
 				});
+				dbItems = docs;
+				console.log('Item fetch success: ', docs);
 
 			});
 
@@ -53,13 +53,18 @@ io.on('connection', function(client) {
 			client.on('newItemSave', function(data) {
 				console.log('Item submitted: ', data);
 
-				itemCol.insert({
+				itemCol.insertOne({
 					title: data.title,
 					completed: false
 				}, function(err, result) {
 					// console.log(result.ops);
+					var resultID = result.ops[0]._id;
 					console.log('Saved: ', data);
-					client.emit('newItemSaved', data);
+					console.log("Result ID: ", result.ops[0]._id);
+					client.emit('newItemSaved', {
+						title: data.title,
+						_id: resultID
+					});
 				});
 			});
 
@@ -97,7 +102,7 @@ io.on('connection', function(client) {
 						completed: true
 					}
 				}, function() {
-					console.log("Item " + data.title + " ticked.");
+					console.log("Item ticked: ", data.title);
 					client.emit('itemTicked', data);
 				});
 			});

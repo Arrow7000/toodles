@@ -8,10 +8,10 @@ var emptyItem = {
 };
 
 // Handlebars functions
-var itemHTML = $("#item-template").html();
-var template = Handlebars.compile(itemHTML);
+// var itemHTML = $("#item-template").html();
+// var template = Handlebars.compile(itemHTML);
 
-
+var itemTemplate = '<div class="item new" data-item-stored="false"><div class="item-section item-del"><i class="fa fa-times"></i></div><div class="item-section item-label"></div><div class="item-section item-tick"><i class="fa fa-check"></i></div>';
 
 
 
@@ -47,35 +47,22 @@ $(document).ready(function() {
 			});
 
 
-
 			//// Page initialiser functions
 
 			// Renders all current items to page
 			for (var i = 0; i < dbOpenItems.length; i++) {
-				itemContainer.append(template(dbOpenItems[i]));
+				newItemAppear(itemContainer, true, true, dbOpenItems[i].title, dbOpenItems[i]._id);
 			}
+			// Renders new item field as empty
+			newItemAppear(itemContainer, true, true);
+
+
 			// renders *completed* items list to page
 			for (var i = 0; i < dbCompletedItems.length; i++) {
-				completedItemContainer.prepend(template(dbCompletedItems[i]));
+				newItemAppear(completedItemContainer, true, false, dbCompletedItems[i].title, dbCompletedItems[i]._id);
 			}
 
-			//// Page initialiser secondary functions
 
-			// Renders the last *current* item as empty
-			itemContainer.append(template(emptyItem));
-			itemContainer.find(':last-child').addClass('empty');
-
-			// Adds item IDs as attributes (IDs taken from MongoDB)
-			for (var i = 0; i < itemContainer.find('.item').length - 1; i++) {
-				itemContainer.find('.item:nth-child(' + (i + 1) + ')').attr('data-item-id', dbOpenItems[i]['_id']).attr('data-item-stored', "true");
-			}
-
-			// Makes items editable
-			editable(itemContainer.find('.item'), true);
-			// itemContainer.find('.item').find('.item-label').attr('contenteditable', 'true');
-			setTimeout(function() {
-				itemContainer.find('.item').removeClass('new')
-			}, 1);
 		});
 	});
 
@@ -91,35 +78,37 @@ $(document).ready(function() {
 		console.log('Disconnected');
 		$('#connection-status').removeClass().addClass('connected').text('Trying to connect...');
 		// Makes items uneditable
-		for (var i = 0; i < itemContainer.find('.item').length; i++) {
-			itemContainer.find('.item>.item-label').attr('contenteditable', 'false');
-		}
+		itemContainer.find('.item>.item-label').attr('contenteditable', 'false');
 	});
 
-
-	// Event save event - on field blur
+	var constantCheck;
+	// Event save event - on field focus
 	$(document).on('blur', '.item-label', function(e) {
 		var content = $(this).text();
 		var item = $(this).parent();
-		if (content.length > 0) {
-			if (item.attr('data-item-stored') === "true") {
-				// Item edit event
-				itemEdit(this);
-			} else {
-				// Item save event
-				newItemSave(this);
+		// constantCheck = setInterval(function() {
+			if ($(this).text().length > 0) {
+				if (item.attr('data-item-stored') === "true") {
+					// Item edit event
+					itemEdit(this);
+				} else {
+					// Item save event
+					newItemSave(this);
+				}
 			}
-		}
+		// }, 500);
 	});
+
+	// $(document).on('blur', '.item-label', function(e) {
+	// 	clearInterval(constantCheck);
+	// });
+
 
 	////// Server 'callbacks' to events
 
 	// Feedback from server that item save is successful
 	server.on('newItemSaved', function(data) {
 		console.log('Save of "' + data.title + '" successful!');
-		// console.log(data._id);
-
-		// console.log("Number of items: ", itemContainer.children().length);;
 
 		// Checks for matching item label (cos there's no other way to link the saved item to its response from the server, as they're separate events)
 		var matched = false;
@@ -129,6 +118,7 @@ $(document).ready(function() {
 			// Checks matching item and makes 
 			if (data.title === item.find('.item-label').text()) {
 				matched = true;
+				console.log(data._id);
 				item.attr('data-item-id', data._id);
 				item.attr('data-item-stored', "true");
 				// console.log("Item " + i + " is a match!");
@@ -147,9 +137,9 @@ $(document).ready(function() {
 	server.on('itemDeleted', function(data) {
 		console.log("Item deleted: ", data.title);
 	});
-	server.on('itemTicked', function(data) {
-		console.log("Item ticked: ", data);
-	});
+	// server.on('itemTicked', function(data) {
+	// 	console.log("Item ticked: ", data);
+	// });
 
 
 
@@ -169,9 +159,8 @@ $(document).ready(function() {
 
 	///// Typing events
 
-	// Events for all keys other than Enter and Tab
+	// Events for all keys other than Enter (both types) and Tab
 	$(document).on('keyup', '.item-label', function(e) {
-		// Does everything apart 
 		if ((e.which == 13 || e.which == 10 || e.which == 9) == false) {
 			typeEvent(this);
 		}
@@ -195,7 +184,6 @@ $(document).ready(function() {
 
 
 
-
 	///// Functions
 
 	// What happens every time user presses a key (should be invoked above)
@@ -203,7 +191,7 @@ $(document).ready(function() {
 		typeCount++;
 		// console.log(typeCount);
 		var parent = $(that).parent();
-		if ($(that).text().length <= 0) {
+		if ($(that).text().length = 0) {
 			// console.log('No text');
 			// what happens when field doesn't have text in it
 			parent.addClass('empty');
@@ -212,7 +200,7 @@ $(document).ready(function() {
 			} else if (parent.next().is(':last-child')) {
 				// console.log('is new item (no text)');
 				// If this is the last item before the newly generated empty field
-				parent.next().remove();
+				parent.next().addClass('new').remove();
 			} else {
 				// console.log('Is existing item');
 				// If this is not the last item in the list
@@ -225,12 +213,7 @@ $(document).ready(function() {
 			$(that).parent().removeClass('empty deleted');
 			if (parent.is(':last-child')) {
 				// console.log('Is new item (has text)');
-				itemContainer.append(template(emptyItem));
-				parent.addClass('empty');
-				console.log("New 'item' added");
-				setTimeout(function() {
-					itemContainer.find('.item:last-child').removeClass('new').find('.item-label')
-				}, 1);
+				newItemAppear(itemContainer, true, true)
 			}
 		}
 	}
@@ -262,32 +245,62 @@ $(document).ready(function() {
 	function itemTick(that) {
 		var content = $(that).text();
 		var item = $(that).parent();
-		item.toggleClass('ticked');
+		var id = item.attr('data-item-id');
+		var title = item.find('.item-label').text();
+		console.log("Ticking item ", id, title);
+		// item.toggleClass('ticked');
 		server.emit('itemTick', {
-			_id: item.attr('data-item-id'),
-			title: item.find('.item-label').text()
+			_id: id,
+			title: title
+		});
+
+		server.on('itemTicked', function(data) {
+			itemContainer.find('div.item').filter('[data-item-id="' + data._id + '"]').addClass('ticked');
+			console.log("Item ticked: ", data);
 		});
 	}
 
 	function itemDelete(that) {
 		var content = $(that).text();
 		var item = $(that).parent();
-		item.toggleClass('deleted');
+		item.addClass('deleted');
 		server.emit('itemDelete', {
 			_id: item.attr('data-item-id'),
 			title: item.find('.item-label').text()
 		});
 	}
-	// Make new item field appear
-	function newItemAppear(that) {
-		var content = $(that).text();
-		var item = $(that).parent();
-	}
-	
+
 	// Makes item contenteditable
-	function editable(item, bool) {
-		item.find('.item-label').attr('contenteditable', 'true');
+	function makeEditable(item, bool) {
+		item.find('.item-label').attr('contenteditable', bool);
 	}
+
+	// Make new item field appear
+	function newItemAppear(parent, editable, normalOrder, itemTitle, itemID) {
+		var newItem = $(itemTemplate);
+		itemTitle ? newItem.attr('data-item-id', itemID).attr('data-item-stored', "true").find('.item-label').text(itemTitle) : newItem.addClass('empty');
+		makeEditable(newItem, editable);
+		normalOrder ? parent.append(newItem) : parent.prepend(newItem);
+		setTimeout(function() {
+			// parent.find('div.item').filter('[data-item-id="' + itemID + '"]').removeClass('new');
+			parent.find('.item').removeClass('new');
+		}, 10);
+	}
+
+
+
+	// Changes the text in a field
+	function message(field, text) {
+		field.text('text');
+	}
+
+	function temporaryMessage(field, text, duration) {
+		var currText = field.text();
+		message(field, text);
+		setTimeout(message(field, currText), duration);
+	}
+
+
 
 
 });
