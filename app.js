@@ -125,20 +125,22 @@ app.set('view engine', 'jade');
 
 app.get('/', function(req, res) {
 	Item.find({}, function(err, docs) {
-		dbItems = docs
-	});
-	openItems = dbItems.filter(function(obj) {
-		return obj.completed === false;
+		// dbItems = docs;
+		openItems = docs.filter(function(obj) {
+			return obj.completed === false;
+		});
+		completedItems = docs.filter(function(obj) {
+			return obj.completed === true;
+		});
+
+		res.render('index', {
+			openItems: openItems,
+			completedItems: completedItems
+		});
 	});
 
-	completedItems = dbItems.filter(function(obj) {
-		return obj.completed === true;
-	});
 
-	res.render('index', {
-		openItems: openItems,
-		completedItems: completedItems
-	});
+
 });
 
 
