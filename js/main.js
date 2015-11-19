@@ -11,7 +11,7 @@ var emptyItem = {
 // var itemHTML = $("#item-template").html();
 // var template = Handlebars.compile(itemHTML);
 
-var itemTemplate = '<div class="item new" data-item-stored="false"><div class="item-section item-del"><i class="fa fa-times"></i></div><div class="item-section item-label"></div><div class="item-section item-tick"><i class="fa fa-check"></i></div>';
+var itemTemplate = '<div class="item" data-item-stored="false"><div class="item-section item-del"><i class="fa fa-times"></i></div><div class="item-section item-label"></div><div class="item-section item-tick"><i class="fa fa-check"></i></div>';
 
 
 
@@ -36,34 +36,34 @@ $(document).ready(function() {
 		$('#connection-status').removeClass().addClass('connected').text('Connected');
 
 		// Item load event, to happen on connection
-		server.on('pageLoadItemLoad', function(dbItems) {
+		// server.on('pageLoadItemLoad', function(dbItems) {
 
-			// Splitting items into open and completed, by filtering
-			dbOpenItems = dbItems.list.filter(function(obj) {
-				return obj.completed === false;
-			});
-			dbCompletedItems = dbItems.list.filter(function(obj) {
-				return obj.completed === true;
-			});
-
-
-			//// Page initialiser functions
-
-			// Renders all current items to page
-			for (var i = 0; i < dbOpenItems.length; i++) {
-				newItemAppear(itemContainer, true, true, dbOpenItems[i].title, dbOpenItems[i]._id);
-			}
-			// Renders new item field as empty
-			newItemAppear(itemContainer, true, true);
+		// 	// Splitting items into open and completed, by filtering
+		// 	dbOpenItems = dbItems.list.filter(function(obj) {
+		// 		return obj.completed === false;
+		// 	});
+		// 	dbCompletedItems = dbItems.list.filter(function(obj) {
+		// 		return obj.completed === true;
+		// 	});
 
 
-			// renders *completed* items list to page
-			for (var i = 0; i < dbCompletedItems.length; i++) {
-				newItemAppear(completedItemContainer, true, false, dbCompletedItems[i].title, dbCompletedItems[i]._id);
-			}
+		// 	//// Page initialiser functions
+
+		// 	// Renders all current items to page
+		// 	for (var i = 0; i < dbOpenItems.length; i++) {
+		// 		newItemAppear(itemContainer, true, true, dbOpenItems[i].title, dbOpenItems[i]._id);
+		// 	}
+		// 	// Renders new item field as empty
+		// 	newItemAppear(itemContainer, true, true);
 
 
-		});
+		// 	// renders *completed* items list to page
+		// 	for (var i = 0; i < dbCompletedItems.length; i++) {
+		// 		newItemAppear(completedItemContainer, true, false, dbCompletedItems[i].title, dbCompletedItems[i]._id);
+		// 	}
+
+
+		// });
 	});
 
 
@@ -81,27 +81,52 @@ $(document).ready(function() {
 		itemContainer.find('.item>.item-label').attr('contenteditable', 'false');
 	});
 
-	var constantCheck;
-	// Event save event - on field focus
+
+
 	$(document).on('blur', '.item-label', function(e) {
 		var content = $(this).text();
 		var item = $(this).parent();
-		// constantCheck = setInterval(function() {
-			if ($(this).text().length > 0) {
-				if (item.attr('data-item-stored') === "true") {
-					// Item edit event
-					itemEdit(this);
-				} else {
-					// Item save event
-					newItemSave(this);
+
+		if (item.attr('data-item-stored') === "true") {
+			if (content.length > 0) {
+				// Item edit event
+				itemEdit(this);
+			} else {
+				// Item save event
+				itemDelete(this);
+			}
+		} else {
+			if (content.length > 0) {
+				newItemSave(this);
+			} else {
+				if (item.next().is(':last-child')) {
+					item.addClass('empty');
+					itemDelete(item.next().remove());
+					// itemDelete(this);
 				}
 			}
-		// }, 500);
+		}
 	});
+	/*
+		Logic for blur event:
 
-	// $(document).on('blur', '.item-label', function(e) {
-	// 	clearInterval(constantCheck);
-	// });
+		if: item is stored (d-i-s=true):
+			if: has text:
+				editEvent
+			else (empty):
+				deleteEvent
+		else (item not stored):
+			if: has text:
+				newItemSave
+			else (empty):
+				if: item is second-to-last:
+					itemDelete
+	*/
+
+
+
+
+
 
 
 	////// Server 'callbacks' to events
@@ -114,7 +139,6 @@ $(document).ready(function() {
 		var matched = false;
 		for (var i = itemContainer.children().length - 1; i >= 1; i--) {
 			var item = itemContainer.find('>:nth-child(' + i + ')');
-			// console.log("Loop run: ", i);
 			// Checks matching item and makes 
 			if (data.title === item.find('.item-label').text()) {
 				matched = true;
@@ -186,37 +210,27 @@ $(document).ready(function() {
 
 	///// Functions
 
+
 	// What happens every time user presses a key (should be invoked above)
 	function typeEvent(that) {
-		typeCount++;
-		// console.log(typeCount);
-		var parent = $(that).parent();
-		if ($(that).text().length = 0) {
-			// console.log('No text');
-			// what happens when field doesn't have text in it
-			parent.addClass('empty');
-			if (parent.is(':last-child')) {
-				parent.attr('data-item-stored', 'false');
-			} else if (parent.next().is(':last-child')) {
-				// console.log('is new item (no text)');
-				// If this is the last item before the newly generated empty field
-				parent.next().addClass('new').remove();
-			} else {
-				// console.log('Is existing item');
-				// If this is not the last item in the list
-				parent.addClass('deleted');
-				focusNext(parent);
+		var item = $(that).parent();
+
+		// what happens when field has text in it
+		if ($(that).text().length > 0) {
+			item.removeClass('empty');
+			if (item.is(':last-child')) {
+				newItemAppear(itemContainer, true, true)
 			}
 		} else {
-			// console.log('Has text');
-			// what happens when field has text in it
-			$(that).parent().removeClass('empty deleted');
-			if (parent.is(':last-child')) {
-				// console.log('Is new item (has text)');
-				newItemAppear(itemContainer, true, true)
+
+			if (item.is(':last-child')) {
+				item.addClass('empty');
 			}
 		}
 	}
+
+
+
 
 	// Move focus to next field
 	function focusNext(that) {
@@ -325,9 +339,40 @@ From server to client:
 		itemTicked
 		itemDeleted
 
-	pageLoadItemLoad
-
 	Potential multicoop acts:
+		coopNewItemSaved
+		coopItemEdited
+		coopItemTicked
+		coopItemDeleted
+
+
+
+
+Logic for typing in item-labels:
+
+	if: has text:
+		class shouldn't contain 'empty'
+		if: item is last:
+			generate item underneath
+	else (is empty): 
+		if: item is last:
+			add 'empty' class
+
+
+Logic for blur event:
+
+if: item is stored (d-i-s=true):
+	if: has text:
+		editEvent
+	else (empty):
+		deleteEvent
+else (item not stored):
+	if: has text:
+		newItemSave
+	else (empty):
+		if: item is second-to-last:
+			itemDelete
+
 
 
 
