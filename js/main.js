@@ -11,7 +11,7 @@ var emptyItem = {
 // var itemHTML = $("#item-template").html();
 // var template = Handlebars.compile(itemHTML);
 
-var itemTemplate = '<div class="item" data-item-stored="false"><div class="item-section item-del"><i class="fa fa-times"></i></div><div class="item-section item-label"></div><div class="item-section item-tick"><i class="fa fa-check"></i></div>';
+var itemTemplate = '<div class="item appear" data-item-stored="false"><div class="item-section item-del"><i class="fa fa-times"></i></div><div class="item-section item-label"></div><div class="item-section item-tick"><i class="fa fa-check"></i></div>';
 
 
 
@@ -35,35 +35,7 @@ $(document).ready(function() {
 		// Changes status to display 'connected'
 		$('#connection-status').removeClass().addClass('connected').text('Connected');
 
-		// Item load event, to happen on connection
-		// server.on('pageLoadItemLoad', function(dbItems) {
-
-		// 	// Splitting items into open and completed, by filtering
-		// 	dbOpenItems = dbItems.list.filter(function(obj) {
-		// 		return obj.completed === false;
-		// 	});
-		// 	dbCompletedItems = dbItems.list.filter(function(obj) {
-		// 		return obj.completed === true;
-		// 	});
-
-
-		// 	//// Page initialiser functions
-
-		// 	// Renders all current items to page
-		// 	for (var i = 0; i < dbOpenItems.length; i++) {
-		// 		newItemAppear(itemContainer, true, true, dbOpenItems[i].title, dbOpenItems[i]._id);
-		// 	}
-		// 	// Renders new item field as empty
-		// 	newItemAppear(itemContainer, true, true);
-
-
-		// 	// renders *completed* items list to page
-		// 	for (var i = 0; i < dbCompletedItems.length; i++) {
-		// 		newItemAppear(completedItemContainer, true, false, dbCompletedItems[i].title, dbCompletedItems[i]._id);
-		// 	}
-
-
-		// });
+		makeEditable(itemContainer, true);
 	});
 
 
@@ -78,7 +50,7 @@ $(document).ready(function() {
 		console.log('Disconnected');
 		$('#connection-status').removeClass().addClass('connected').text('Trying to connect...');
 		// Makes items uneditable
-		itemContainer.find('.item>.item-label').attr('contenteditable', 'false');
+		makeEditable(itemContainer, false);
 	});
 
 
@@ -101,7 +73,11 @@ $(document).ready(function() {
 			} else {
 				if (item.next().is(':last-child')) {
 					item.addClass('empty');
-					itemDelete(item.next().remove());
+					itemDisappear(item.next());
+					setTimeout(function() {
+						item.next().remove();
+					}, 500);
+					// itemDelete(item.next().remove());
 					// itemDelete(this);
 				}
 			}
@@ -120,7 +96,7 @@ $(document).ready(function() {
 				newItemSave
 			else (empty):
 				if: item is second-to-last:
-					itemDelete
+					delete last item
 	*/
 
 
@@ -214,7 +190,7 @@ $(document).ready(function() {
 	// What happens every time user presses a key (should be invoked above)
 	function typeEvent(that) {
 		var item = $(that).parent();
-
+		var nextItem = item.next('.item');
 		// what happens when field has text in it
 		if ($(that).text().length > 0) {
 			item.removeClass('empty');
@@ -222,12 +198,29 @@ $(document).ready(function() {
 				newItemAppear(itemContainer, true, true)
 			}
 		} else {
-
-			if (item.is(':last-child')) {
+			if (nextItem.is(':last-child')) {
 				item.addClass('empty');
+				nextItem.removeClass('appear').addClass('disappear');
+
+				setTimeout(function() {
+					nextItem.remove();
+				}, 500);
 			}
 		}
 	}
+
+	/*	
+	Logic for typing in item-labels:
+
+		if: has text:
+			class shouldn't contain 'empty'
+			if: item is last:
+				generate item underneath
+		else (is empty): 
+			if: item is penultimate:
+				add 'empty' class
+				remove next item
+	*/
 
 
 
@@ -262,16 +255,21 @@ $(document).ready(function() {
 		var id = item.attr('data-item-id');
 		var title = item.find('.item-label').text();
 		console.log("Ticking item ", id, title);
-		// item.toggleClass('ticked');
 		server.emit('itemTick', {
 			_id: id,
 			title: title
 		});
-
+		// On confirmation from the server
 		server.on('itemTicked', function(data) {
-			itemContainer.find('div.item').filter('[data-item-id="' + data._id + '"]').addClass('ticked');
+			var tickedItem = itemContainer.find('div.item').filter('[data-item-id="' + data._id + '"]');
+			tickedItem.addClass('ticked');
 			console.log("Item ticked: ", data);
+			setTimeout(function() {
+				tickedItem.prependTo(completedItemContainer);
+				tickedItem.removeClass('ticked').addClass('appear');
+			}, 1000);
 		});
+
 	}
 
 	function itemDelete(that) {
@@ -292,13 +290,16 @@ $(document).ready(function() {
 	// Make new item field appear
 	function newItemAppear(parent, editable, normalOrder, itemTitle, itemID) {
 		var newItem = $(itemTemplate);
+		// Assigns attributes to newItem as necessary. ID, title, etc if existing item, and class of empty if new
 		itemTitle ? newItem.attr('data-item-id', itemID).attr('data-item-stored', "true").find('.item-label').text(itemTitle) : newItem.addClass('empty');
+		// Makes it editable
 		makeEditable(newItem, editable);
+		// Determines whether it gets pre-or-ap-pended
 		normalOrder ? parent.append(newItem) : parent.prepend(newItem);
-		setTimeout(function() {
-			// parent.find('div.item').filter('[data-item-id="' + itemID + '"]').removeClass('new');
-			parent.find('.item').removeClass('new');
-		}, 10);
+	}
+
+	function itemDisappear(item) {
+		item.removeClass('appear').addClass('disappear');
 	}
 
 

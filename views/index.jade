@@ -48,6 +48,7 @@ html(class='no-js')
         h2 Completed
       #completed-item-container.items-container.completed
         //- Generate completed items
+        - completedItems.reverse()
         each item in completedItems
           +itemTemplate(false, item.title, item.id)
 

@@ -4,6 +4,7 @@ var server = require('http').createServer(app);
 var io = require('socket.io')(server);
 var mongoose = require('mongoose');
 
+// Connect toMongoDB  database via Mongoose
 mongoose.connect('mongodb://heroku_bksj92g6:77ehmrlo36tj9hl2jae87kdohv@ds051524.mongolab.com:51524/heroku_bksj92g6', function(err) {
 	if (err) {
 		throw err;
@@ -11,21 +12,23 @@ mongoose.connect('mongodb://heroku_bksj92g6:77ehmrlo36tj9hl2jae87kdohv@ds051524.
 		console.log("Connected to DB");
 	}
 });
+// Abbrev.
 var db = mongoose.connection;
-// db.on('error', console.error.bind(console, 'connection error:'));
 
+// Defining a schema and assigning to collection
 var itemSchema = mongoose.Schema({
 	title: String,
-	completed: Boolean
+	completed: Boolean,
+	archived: Boolean
 }, {
 	collection: 'items',
 	versionKey: false
 });
-
+// Applying the above schema to 'Item' model
 var Item = mongoose.model('Item', itemSchema);
 
 
-var itemCol, userCol, database, dbItems, openItems, completedItems;
+var openItems, completedItems;
 
 
 
@@ -41,7 +44,8 @@ io.on('connection', function(client) {
 		console.log('Item submitted: ', data);
 		Item.create({
 			title: data.title,
-			completed: false
+			completed: false,
+			archived: false
 		}, function(err, result) {
 			if (err) return handleError(err);
 			console.log('Saved: ', data);

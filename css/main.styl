@@ -273,12 +273,11 @@ h3#connection-status {
                 width 100%;
             }
         }
-        &.new {
-            .item-section {
-                max-height: 0;
-                padding 0;
-                margin-bottom 0;
-            }
+        &.appear {
+            -webkit-animation: itemAppear 0.5s forwards;
+        }
+        &.disappear {
+            -webkit-animation: itemDisappear 0.5s forwards;
         }
     }
     // Completed items list
@@ -299,27 +298,18 @@ h3#connection-status {
     }
 }
 
-@keyframes tickItem {
+@keyframes itemAppear {
     0% {
-        max-height 85px;
-        margin-bottom 25px;
-    }
-    66.66% {
-        max-height 85px;
-        margin-bottom: 25px;
+        max-height: 0;h
     }
     100% {
-        max-height: 0;
-        margin-bottom: 0;
+        max-height 105px;
     }
 }
 
-@keyframes tickItemSection {
+@keyframes itemDisappear {
     0% {
-        max-height 85px;
-    }
-    66.66% {
-        max-height 85px;
+        max-height 105px;
     }
     100% {
         max-height: 0;

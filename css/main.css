@@ -223,10 +223,11 @@ h3#connection-status.disconnected {
 .items-container .item.deleted .item-del {
   width: 100%;
 }
-.items-container .item.new .item-section {
-  max-height: 0;
-  padding: 0;
-  margin-bottom: 0;
+.items-container .item.appear {
+  -webkit-animation: itemAppear 0.5s forwards;
+}
+.items-container .item.disappear {
+  -webkit-animation: itemDisappear 0.5s forwards;
 }
 .items-container.completed {
   margin-bottom: 150px;
@@ -366,101 +367,69 @@ h3#connection-status.disconnected {
     page-break-after: avoid;
   }
 }
-@-moz-keyframes tickItem {
+@-moz-keyframes itemAppear {
   0% {
-    max-height: 85px;
-    margin-bottom: 25px;
-  }
-  66.66% {
-    max-height: 85px;
-    margin-bottom: 25px;
+    max-height: 0;
+h
   }
   100% {
-    max-height: 0;
-    margin-bottom: 0;
+    max-height: 105px;
   }
 }
-@-webkit-keyframes tickItem {
+@-webkit-keyframes itemAppear {
   0% {
-    max-height: 85px;
-    margin-bottom: 25px;
-  }
-  66.66% {
-    max-height: 85px;
-    margin-bottom: 25px;
+    max-height: 0;
+h
   }
   100% {
-    max-height: 0;
-    margin-bottom: 0;
+    max-height: 105px;
   }
 }
-@-o-keyframes tickItem {
+@-o-keyframes itemAppear {
   0% {
-    max-height: 85px;
-    margin-bottom: 25px;
-  }
-  66.66% {
-    max-height: 85px;
-    margin-bottom: 25px;
+    max-height: 0;
+h
   }
   100% {
-    max-height: 0;
-    margin-bottom: 0;
+    max-height: 105px;
   }
 }
-@keyframes tickItem {
+@keyframes itemAppear {
   0% {
-    max-height: 85px;
-    margin-bottom: 25px;
-  }
-  66.66% {
-    max-height: 85px;
-    margin-bottom: 25px;
+    max-height: 0;
+h
   }
   100% {
-    max-height: 0;
-    margin-bottom: 0;
+    max-height: 105px;
   }
 }
-@-moz-keyframes tickItemSection {
+@-moz-keyframes itemDisappear {
   0% {
-    max-height: 85px;
-  }
-  66.66% {
-    max-height: 85px;
+    max-height: 105px;
   }
   100% {
     max-height: 0;
   }
 }
-@-webkit-keyframes tickItemSection {
+@-webkit-keyframes itemDisappear {
   0% {
-    max-height: 85px;
-  }
-  66.66% {
-    max-height: 85px;
+    max-height: 105px;
   }
   100% {
     max-height: 0;
   }
 }
-@-o-keyframes tickItemSection {
+@-o-keyframes itemDisappear {
   0% {
-    max-height: 85px;
-  }
-  66.66% {
-    max-height: 85px;
+    max-height: 105px;
   }
   100% {
     max-height: 0;
   }
 }
-@keyframes tickItemSection {
+@keyframes itemDisappear {
   0% {
-    max-height: 85px;
-  }
-  66.66% {
-    max-height: 85px;
+    max-height: 105px;
   }
   100% {
     max-height: 0;
