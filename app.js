@@ -1,5 +1,4 @@
 var express = require('express');
-var fs = require('fs');
 var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
@@ -32,7 +31,7 @@ var itemCol, userCol, database, dbItems, openItems, completedItems;
 
 // Client connection event and content
 io.on('connection', function(client) {
-	console.log('Client connected...');
+	console.log('Websocket connected...');
 
 
 
@@ -99,7 +98,7 @@ io.on('connection', function(client) {
 
 	client.on('disconnect', function() {
 		// Stuff to do on client disconnection event
-		console.log("Client disconnected.");
+		console.log("Websocket disconnected.");
 	});
 
 });
@@ -107,26 +106,23 @@ io.on('connection', function(client) {
 
 
 
-var itemsList = [];
-// itemsList = getItems();
 
 
 
-
-
-
-
-
-
+// Sets the static file folders
 app.use("/js", express.static(__dirname + "/js"));
 app.use("/css", express.static(__dirname + "/css"));
 
+
+
+
+// Sets views folder and engine
 app.set('views', __dirname + '/views')
 app.set('view engine', 'jade');
 
+// Send/response function
 app.get('/', function(req, res) {
 	Item.find({}, function(err, docs) {
-		// dbItems = docs;
 		openItems = docs.filter(function(obj) {
 			return obj.completed === false;
 		});
@@ -134,19 +130,20 @@ app.get('/', function(req, res) {
 			return obj.completed === true;
 		});
 
+		// Actually renders and sends the page
 		res.render('index', {
 			openItems: openItems,
 			completedItems: completedItems
 		});
-	});
 
+	});
 
 
 });
 
-
+// All other paths result in 404
 app.get('*', function(req, res) {
-	res.sendFile(__dirname + '/404.html');
+	res.status(404).sendFile(__dirname + '/404.html');
 });
 
 
