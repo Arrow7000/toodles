@@ -106,6 +106,8 @@ textarea {
 
 // Variables
 $item-label-color=#663399;
+$item-tick-color=#26A65B;
+$item-del-color=#D2527F;
 $page-back=#efefef;
 html {
     font-family: 'PT Sans', sans-serif;
@@ -213,13 +215,13 @@ h3#connection-status {
             }
             &.item-tick {
                 width 25%;
-                background-color #26A65B;
+                background-color $item-tick-color;
                 float: left;
             }
             &.item-del {
                 width 10%;
-                background-color $page-back;
-                background-color #D2527F;
+                // background-color $page-back;
+                background-color $item-del-color;
                 float: left;
             }
         }
@@ -285,14 +287,60 @@ h3#connection-status {
         margin-bottom 150px;
         .item-section {
             &.item-label {
-                background-color alpha($item-label-color, 0.3);
-                width 100%;
+                background-color alpha($item-label-color, 0.5);
+                width 70%;
             }
             &.item-tick {
-                display none;
+                // display none;
+                background-color: alpha($item-tick-color, 0.5);
+                width: 20%;
+                i:before {
+                    content: "\f106";
+                }
             }
             &.item-del {
-                display none;
+                // display none;
+                background-color: alpha($item-del-color, 0.5);
+                width: 10%;
+                i.fa.fa-times:before {
+                    content: "\f187";
+                }
+            }
+        }
+        .ticked {
+            // .item-section {
+            //     max-height: 0;
+            //     padding 0;
+            //     margin-bottom 0;
+            // }
+            .item-label {
+                width 0;
+                padding-right 0;
+                padding-left 0;
+            }
+            .item-tick {
+                width 100%;
+            }
+            .item-del {
+                width 0;
+            }
+        }
+        .deleted {
+            // .item-section {
+            //     max-height: 0;
+            //     padding 0;
+            //     margin-bottom 0;
+            // }
+            .item-label {
+                width 0;
+                padding-right 0;
+                padding-left 0;
+            }
+            .item-tick {
+                width 0;
+            }
+            .item-del {
+                width 100%;
             }
         }
     }
@@ -300,7 +348,7 @@ h3#connection-status {
 
 @keyframes itemAppear {
     0% {
-        max-height: 0;h
+        max-height: 0;
     }
     100% {
         max-height 105px;

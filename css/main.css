@@ -177,7 +177,6 @@ h3#connection-status.disconnected {
 }
 .items-container .item .item-section.item-del {
   width: 10%;
-  background-color: #efefef;
   background-color: #d2527f;
   float: left;
 }
@@ -233,14 +232,44 @@ h3#connection-status.disconnected {
   margin-bottom: 150px;
 }
 .items-container.completed .item-section.item-label {
-  background-color: rgba(102,51,153,0.3);
-  width: 100%;
+  background-color: rgba(102,51,153,0.5);
+  width: 70%;
 }
 .items-container.completed .item-section.item-tick {
-  display: none;
+  background-color: rgba(38,166,91,0.5);
+  width: 20%;
+}
+.items-container.completed .item-section.item-tick i:before {
+  content: "\f106";
 }
 .items-container.completed .item-section.item-del {
-  display: none;
+  background-color: rgba(210,82,127,0.5);
+  width: 10%;
+}
+.items-container.completed .item-section.item-del i.fa.fa-times:before {
+  content: "\f187";
+}
+.items-container.completed .ticked .item-label {
+  width: 0;
+  padding-right: 0;
+  padding-left: 0;
+}
+.items-container.completed .ticked .item-tick {
+  width: 100%;
+}
+.items-container.completed .ticked .item-del {
+  width: 0;
+}
+.items-container.completed .deleted .item-label {
+  width: 0;
+  padding-right: 0;
+  padding-left: 0;
+}
+.items-container.completed .deleted .item-tick {
+  width: 0;
+}
+.items-container.completed .deleted .item-del {
+  width: 100%;
 }
 /* ==========================================================================
    Helper classes
@@ -370,7 +399,6 @@ h3#connection-status.disconnected {
 @-moz-keyframes itemAppear {
   0% {
     max-height: 0;
-h
   }
   100% {
     max-height: 105px;
@@ -379,7 +407,6 @@ h
 @-webkit-keyframes itemAppear {
   0% {
     max-height: 0;
-h
   }
   100% {
     max-height: 105px;
@@ -388,7 +415,6 @@ h
 @-o-keyframes itemAppear {
   0% {
     max-height: 0;
-h
   }
   100% {
     max-height: 105px;
@@ -397,7 +423,6 @@ h
 @keyframes itemAppear {
   0% {
     max-height: 0;
-h
   }
   100% {
     max-height: 105px;

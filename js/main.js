@@ -11,11 +11,13 @@ var emptyItem = {
 // var itemHTML = $("#item-template").html();
 // var template = Handlebars.compile(itemHTML);
 
-var itemTemplate = '<div class="item appear" data-item-stored="false"><div class="item-section item-del"><i class="fa fa-times"></i></div><div class="item-section item-label"></div><div class="item-section item-tick"><i class="fa fa-check"></i></div>';
+var itemTemplate = '<div class="item appear" data-item-stored="false" data-item-order="n"><div class="item-section item-del"><i class="fa fa-times"></i></div><div class="item-section item-label"></div><div class="item-section item-tick"><i class="fa fa-check"></i></div>';
 
 
 
 $(document).ready(function() {
+
+
 
 	// Variable assignment for speedier DOM element grabbing
 	var itemContainer = $("#item-container");
@@ -23,7 +25,7 @@ $(document).ready(function() {
 
 
 
-
+	// itemContainer.sortable();
 
 
 	// Sets server location
@@ -77,8 +79,6 @@ $(document).ready(function() {
 					setTimeout(function() {
 						item.next().remove();
 					}, 500);
-					// itemDelete(item.next().remove());
-					// itemDelete(this);
 				}
 			}
 		}
@@ -137,24 +137,37 @@ $(document).ready(function() {
 	server.on('itemDeleted', function(data) {
 		console.log("Item deleted: ", data.title);
 	});
-	// server.on('itemTicked', function(data) {
-	// 	console.log("Item ticked: ", data);
-	// });
+	server.on('coopNewItemSaved', function(data) {
+		coopNewItemSaved(itemContainer, data);
+	});
 
 
 
 	///// Button tap events
 
 	// Tap 'tick' button
-	$(document).on('tap', '.item-tick', function(e) {
+	$(document).on('tap', '#item-container .item-tick', function(e) {
 		itemTick(this);
 	});
 
 	// Tap 'delete' button
-	$(document).on('tap', '.item-del', function(e) {
-		var item = $(this).parent();
+	$(document).on('tap', '#item-container .item-del', function(e) {
 		itemDelete(this);
 	});
+
+
+	/// Completed item actions
+
+	// Tap 'untick' button when item is completed
+	$(document).on('tap', '#completed-item-container .item-tick', function(e) {
+		itemUntick(this);
+	});
+
+	// Tap 'archive' button
+	$(document).on('tap', '#completed-item-container .item-del', function(e) {
+		itemArchive(this);
+	});
+
 
 
 	///// Typing events
@@ -254,22 +267,25 @@ $(document).ready(function() {
 		var item = $(that).parent();
 		var id = item.attr('data-item-id');
 		var title = item.find('.item-label').text();
-		console.log("Ticking item ", id, title);
-		server.emit('itemTick', {
-			_id: id,
-			title: title
-		});
+		if (item.attr('data-item-stored') === "true") {
+			console.log("Ticking item ", id, title);
+			makeEditable(item, false);
+			item.addClass('ticked');
+			server.emit('itemTick', {
+				_id: id,
+				title: title
+			});
+		}
 		// On confirmation from the server
 		server.on('itemTicked', function(data) {
 			var tickedItem = itemContainer.find('div.item').filter('[data-item-id="' + data._id + '"]');
-			tickedItem.addClass('ticked');
+			// tickedItem.addClass('ticked');
 			console.log("Item ticked: ", data);
 			setTimeout(function() {
 				tickedItem.prependTo(completedItemContainer);
 				tickedItem.removeClass('ticked').addClass('appear');
 			}, 1000);
 		});
-
 	}
 
 	function itemDelete(that) {
@@ -280,6 +296,49 @@ $(document).ready(function() {
 			_id: item.attr('data-item-id'),
 			title: item.find('.item-label').text()
 		});
+	}
+
+	// Unticking an item
+	function itemUntick(that) {
+		var content = $(that).text();
+		var item = $(that).parent();
+		var id = item.attr('data-item-id');
+		var title = item.find('.item-label').text();
+		console.log("Unticking item ", id, title);
+		item.addClass('ticked');
+		server.emit('itemUntick', {
+			_id: id,
+			title: title
+		});
+		// On confirmation from the server
+		server.on('itemUnticked', function(data) {
+			var untickedItem = completedItemContainer.find('div.item').filter('[data-item-id="' + data._id + '"]');
+			// untickedItem.addClass('ticked');
+			console.log("Item unticked: ", data);
+			setTimeout(function() {
+				// itemContainer;
+				untickedItem.insertBefore(itemContainer.find('.item:last-child'));
+				makeEditable(untickedItem, true);
+				untickedItem.removeClass('ticked').addClass('appear');
+			}, 1000);
+		});
+	}
+
+	function itemArchive(that) {
+		var content = $(that).text();
+		var item = $(that).parent();
+		item.addClass('deleted');
+		server.emit('itemArchive', {
+			_id: item.attr('data-item-id'),
+			title: item.find('.item-label').text()
+		});
+		server.on('itemArchived', function(data) {
+			console.log("Item archived: ", data);
+		});
+	}
+
+	function coopNewItemSaved(parent, itemData) {
+		newItemAppear(parent, true, true, itemData.title, itemData._id);
 	}
 
 	// Makes item contenteditable
@@ -295,7 +354,16 @@ $(document).ready(function() {
 		// Makes it editable
 		makeEditable(newItem, editable);
 		// Determines whether it gets pre-or-ap-pended
-		normalOrder ? parent.append(newItem) : parent.prepend(newItem);
+		if (normalOrder) {
+			if (itemTitle) {
+				newItem.insertBefore(itemContainer.find('.item:last-child'));
+			} else {
+				parent.append(newItem);
+			}
+			newItem.attr("data-item-order", parent.children().length);
+		} else {
+			parent.prepend(newItem);
+		}
 	}
 
 	function itemDisappear(item) {
@@ -331,6 +399,8 @@ To server:
 	newItemSave
 	itemEdit
 	itemTick
+	itemUntick
+	itemArchive
 	itemDelete
 
 From server to client:
@@ -338,6 +408,8 @@ From server to client:
 		newItemSaved
 		itemEdited
 		itemTicked
+		itemUnticked
+		itemArchived
 		itemDeleted
 
 	Potential multicoop acts:

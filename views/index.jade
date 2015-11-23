@@ -23,8 +23,8 @@ html(class='no-js')
         to improve your experience.
     
     //- Item template
-    mixin itemTemplate(editable, title, id)
-      .item(class=(id ? '' : 'empty'), data-item-stored=(id ? 'true' : 'false'), data-item-id=(id ? id : ''))
+    mixin itemTemplate(order, editable, title, id)
+      .item(class=(id ? '' : 'empty'), data-item-stored=(id ? 'true' : 'false'), data-item-id=(id ? id : ''), data-item-order=order)
         .item-section.item-del
           i.fa.fa-times
         .item-section.item-label(contenteditable=editable) #{title}
@@ -39,9 +39,9 @@ html(class='no-js')
         h3#connection-status.connecting Connecting
       #item-container.items-container
         //- Generate open items
-        each item in openItems
-          +itemTemplate(true, item.title, item.id)
-        +itemTemplate(true)
+        each item, index in openItems
+          +itemTemplate(index+1, true, item.title, item.id)
+        +itemTemplate(openItems.length+1, true)
 
 
       .header.divider
@@ -49,8 +49,8 @@ html(class='no-js')
       #completed-item-container.items-container.completed
         //- Generate completed items
         - completedItems.reverse()
-        each item in completedItems
-          +itemTemplate(false, item.title, item.id)
+        each item, index in completedItems
+          +itemTemplate(index+1, false, item.title, item.id)
 
 
 

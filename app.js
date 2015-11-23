@@ -54,6 +54,10 @@ io.on('connection', function(client) {
 				title: data.title,
 				_id: result.id
 			});
+			io.sockets.emit('coopNewItemSaved', {
+				title: data.title,
+				_id: result.id
+			});
 		});
 	});
 
@@ -99,6 +103,34 @@ io.on('connection', function(client) {
 		});
 	});
 
+	// Item untick event
+	client.on('itemUntick', function(data) {
+		Item.update({
+			_id: data._id
+		}, {
+			$set: {
+				completed: false
+			}
+		}, function() {
+			console.log("Item unticked: ", data.title);
+			client.emit('itemUnticked', data);
+		});
+	});
+
+	// Item archive event
+	client.on('itemArchive', function(data) {
+		Item.update({
+			_id: data._id
+		}, {
+			$set: {
+				archived: true
+			}
+		}, function() {
+			console.log("Item archived: ", data.title);
+			client.emit('itemArchived', data);
+		});
+	});
+
 
 	client.on('disconnect', function() {
 		// Stuff to do on client disconnection event
@@ -126,7 +158,9 @@ app.set('view engine', 'jade');
 
 // Send/response function
 app.get('/', function(req, res) {
-	Item.find({}, function(err, docs) {
+	Item.find({
+		archived: false
+	}, function(err, docs) {
 		openItems = docs.filter(function(obj) {
 			return obj.completed === false;
 		});
