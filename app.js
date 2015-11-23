@@ -54,7 +54,8 @@ io.on('connection', function(client) {
 				title: data.title,
 				_id: result.id
 			});
-			io.sockets.emit('coopNewItemSaved', {
+			// console.log(io.broadcast.emit);
+			client.broadcast.emit('coopNewItemSaved', {
 				title: data.title,
 				_id: result.id
 			});
@@ -75,6 +76,7 @@ io.on('connection', function(client) {
 			} else {
 				console.log("item updated.", data);
 				client.emit('itemEdited', data);
+				client.broadcast.emit('coopItemEdited', data);
 			}
 		});
 	});
@@ -86,6 +88,7 @@ io.on('connection', function(client) {
 		}, function() {
 			console.log("Item " + data.title + " deleted.");
 			client.emit('itemDeleted', data);
+			client.broadcast.emit('coopItemDeleted', data);
 		});
 	});
 
@@ -100,6 +103,7 @@ io.on('connection', function(client) {
 		}, function() {
 			console.log("Item ticked: ", data.title);
 			client.emit('itemTicked', data);
+			client.broadcast.emit('coopItemTicked', data);
 		});
 	});
 
@@ -114,6 +118,7 @@ io.on('connection', function(client) {
 		}, function() {
 			console.log("Item unticked: ", data.title);
 			client.emit('itemUnticked', data);
+			client.broadcast.emit('coopItemUnticked', data);
 		});
 	});
 
@@ -128,6 +133,7 @@ io.on('connection', function(client) {
 		}, function() {
 			console.log("Item archived: ", data.title);
 			client.emit('itemArchived', data);
+			client.broadcast.emit('coopItemArchived', data);
 		});
 	});
 
