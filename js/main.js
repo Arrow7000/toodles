@@ -223,19 +223,6 @@ $(document).ready(function() {
 
 
 
-	// /// Responses to other users' actions
-	// server.on('coopNewItemSaved', function(data) {
-	// 	newItemAppear(itemContainer, true, true, data.title, data._id);
-	// });
-
-
-
-
-
-
-
-
-
 
 
 
@@ -269,18 +256,6 @@ $(document).ready(function() {
 		}
 	}
 
-	/*	
-	Logic for typing in item-labels:
-
-		if: has text:
-			class shouldn't contain 'empty'
-			if: item is last:
-				generate item underneath
-		else (is empty): 
-			if: item is penultimate:
-				add 'empty' class
-				remove next item
-	*/
 
 
 
@@ -366,12 +341,12 @@ $(document).ready(function() {
 			title: item.find('.item-label').text()
 		});
 	}
+	/// End of CRUD operations
 
 
 
 
-
-	// Makes item contenteditable
+	// Makes item contenteditable - or not
 	function makeEditable(item, bool) {
 		item.find('.item-label').attr('contenteditable', bool);
 	}
@@ -396,11 +371,10 @@ $(document).ready(function() {
 		}
 	}
 
+	// Used primarily for making a new blank item appear
 	function itemDisappear(item) {
 		item.removeClass('appear').addClass('disappear');
 	}
-
-
 
 	// Changes the text in a field
 	function message(field, text) {
@@ -412,6 +386,16 @@ $(document).ready(function() {
 		message(field, text);
 		setTimeout(message(field, currText), duration);
 	}
+
+	// Moves item to the index specified and moves all below down
+	function moveToIndex(item, targetIndex) {
+		// body...
+	}
+
+
+
+
+
 
 
 
