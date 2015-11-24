@@ -4,6 +4,14 @@ var server = require('http').createServer(app);
 var io = require('socket.io')(server);
 var mongoose = require('mongoose');
 
+/// Variable assignments
+// The model object! Contains all non-archived items, both complete and open
+var model = {
+	openItems: [],
+	completedItems: [],
+	archivedItems: []
+};
+
 // Connect toMongoDB  database via Mongoose
 mongoose.connect('mongodb://heroku_bksj92g6:77ehmrlo36tj9hl2jae87kdohv@ds051524.mongolab.com:51524/heroku_bksj92g6', function(err) {
 	if (err) {
@@ -13,7 +21,7 @@ mongoose.connect('mongodb://heroku_bksj92g6:77ehmrlo36tj9hl2jae87kdohv@ds051524.
 	}
 });
 // Abbrev.
-var db = mongoose.connection;
+// var db = mongoose.connection;
 
 // Defining a schema and assigning to collection
 var itemSchema = mongoose.Schema({
@@ -28,13 +36,123 @@ var itemSchema = mongoose.Schema({
 var Item = mongoose.model('Item', itemSchema);
 
 
-var openItems, completedItems;
 
 
+/// Server configuration (only when database connection is complete)
+
+// Sets the static file folders
+app.use("/js", express.static(__dirname + "/js"));
+app.use("/css", express.static(__dirname + "/css"));
+// Sets views folder and engine
+app.set('views', __dirname + '/views')
+app.set('view engine', 'jade');
+// Send & response function
+
+// set port
+var port = (process.env.PORT || 5000);
+server.listen(port, function() {
+	console.log('Server now running...');
+});
+app.get('/', function(req, res) {
+
+	Item.find({}, function(err, docs) {
+		/// First sets the model object
+		var activeItems = docs.filter(function(obj) {
+			return obj.archived === false;
+		});
+		// Open items
+		model.openItems = activeItems.filter(function(obj) {
+			return obj.completed === false;
+		});
+		// Completed items
+		model.completedItems = activeItems.filter(function(obj) {
+			return obj.completed === true;
+		});
+		// Archived items
+		model.archivedItems = docs.filter(function(obj) {
+			return obj.archived === true;
+		});
+		// Reverse the completed items array, so that recent items appear first
+		// model.completedItems.reverse();
+		// Actually renders and sends the page, with the model object as the data
+		res.render('index', model);
+
+	});
+
+
+
+});
+
+// All other paths result in 404
+app.get('*', function(req, res) {
+	res.status(404).sendFile(__dirname + '/404.html');
+});
+
+
+
+
+
+
+
+
+
+/// Websocket connections and item change events
 
 // Client connection event and content
 io.on('connection', function(client) {
 	console.log('Websocket connected...');
+
+	// syncModels(from, to);
+
+	client.emit('connectionUpdate', model);
+	console.log(model);
+
+
+
+
+
+
+	// New revamped events that occur on server when items are changed
+	// client.on('newItemSave', function(data) {
+	// 	// body...
+	// });
+	// client.on('itemChange', function(data) {
+	// 	Item.update({
+	// 		_id: data._id
+	// 	}, {
+	// 		$set: {
+	// 			title: data.title
+	// 		}
+	// 	}, function(err, result) {
+	// 		if (err) {
+	// 			console.log("Error", err);
+	// 		} else {
+	// 			console.log("item updated.", data);
+	// 			client.emit('itemEdited', data);
+	// 			client.broadcast.emit('coopItemEdited', data);
+	// 		}
+	// 	});
+	// });
+	// client.on('itemDelete', function(data) {
+	// 	// body...
+	// });
+
+
+
+
+
+
+	// Update server model
+	// syncModels(from, to);
+
+	// Send out updated model to all clients
+
+
+	// Server job finished. Now client does the rest. 
+
+
+
+
 
 
 
@@ -50,15 +168,15 @@ io.on('connection', function(client) {
 			if (err) return handleError(err);
 			console.log('Saved: ', data);
 			console.log("Result ID: ", result.id);
-			client.emit('newItemSaved', {
+			io.emit('newItemSaved', {
 				title: data.title,
-				_id: result.id
+				_id: result.id,
+				index: data.index
 			});
-			// console.log(io.broadcast.emit);
-			client.broadcast.emit('coopNewItemSaved', {
-				title: data.title,
-				_id: result.id
-			});
+			// client.broadcast.emit('coopNewItemSaved', {
+			// 	title: data.title,
+			// 	_id: result.id
+			// });
 		});
 	});
 
@@ -75,8 +193,8 @@ io.on('connection', function(client) {
 				console.log("Error", err);
 			} else {
 				console.log("item updated.", data);
-				client.emit('itemEdited', data);
-				client.broadcast.emit('coopItemEdited', data);
+				io.emit('itemEdited', data);
+				// client.broadcast.emit('coopItemEdited', data);
 			}
 		});
 	});
@@ -87,8 +205,8 @@ io.on('connection', function(client) {
 			_id: data._id
 		}, function() {
 			console.log("Item " + data.title + " deleted.");
-			client.emit('itemDeleted', data);
-			client.broadcast.emit('coopItemDeleted', data);
+			io.emit('itemDeleted', data);
+			// client.broadcast.emit('coopItemDeleted', data);
 		});
 	});
 
@@ -102,8 +220,8 @@ io.on('connection', function(client) {
 			}
 		}, function() {
 			console.log("Item ticked: ", data.title);
-			client.emit('itemTicked', data);
-			client.broadcast.emit('coopItemTicked', data);
+			io.emit('itemTicked', data);
+			// client.broadcast.emit('coopItemTicked', data);
 		});
 	});
 
@@ -117,8 +235,8 @@ io.on('connection', function(client) {
 			}
 		}, function() {
 			console.log("Item unticked: ", data.title);
-			client.emit('itemUnticked', data);
-			client.broadcast.emit('coopItemUnticked', data);
+			io.emit('itemUnticked', data);
+			// client.broadcast.emit('coopItemUnticked', data);
 		});
 	});
 
@@ -132,10 +250,12 @@ io.on('connection', function(client) {
 			}
 		}, function() {
 			console.log("Item archived: ", data.title);
-			client.emit('itemArchived', data);
-			client.broadcast.emit('coopItemArchived', data);
+			io.emit('itemArchived', data);
+			// client.broadcast.emit('coopItemArchived', data);
 		});
 	});
+
+
 
 
 	client.on('disconnect', function() {
@@ -151,48 +271,11 @@ io.on('connection', function(client) {
 
 
 
-// Sets the static file folders
-app.use("/js", express.static(__dirname + "/js"));
-app.use("/css", express.static(__dirname + "/css"));
 
 
 
-
-// Sets views folder and engine
-app.set('views', __dirname + '/views')
-app.set('view engine', 'jade');
-
-// Send/response function
-app.get('/', function(req, res) {
-	Item.find({
-		archived: false
-	}, function(err, docs) {
-		openItems = docs.filter(function(obj) {
-			return obj.completed === false;
-		});
-		completedItems = docs.filter(function(obj) {
-			return obj.completed === true;
-		});
-
-		// Actually renders and sends the page
-		res.render('index', {
-			openItems: openItems,
-			completedItems: completedItems
-		});
-
-	});
-
-
-});
-
-// All other paths result in 404
-app.get('*', function(req, res) {
-	res.status(404).sendFile(__dirname + '/404.html');
-});
-
-
-var port = (process.env.PORT || 5000);
-
-server.listen(port, function() {
-	console.log('Server now running...');
-});
+function syncModels(from, to) {
+	to.openItems = from.openItems;
+	to.completedItems = from.completedItems;
+	to.archivedItems = from.archivedItems;
+}

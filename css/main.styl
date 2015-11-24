@@ -173,7 +173,7 @@ h3#connection-status {
     }
 }
 
-.items-container {
+.item-container {
     .item {
         // margin-bottom 25px;
         width 100%;
@@ -283,7 +283,8 @@ h3#connection-status {
         }
     }
     // Completed items list
-    &.completed {
+    &#completed-item-container,
+    &#archived-item-container {
         margin-bottom 150px;
         .item-section {
             &.item-label {
@@ -342,6 +343,21 @@ h3#connection-status {
             .item-del {
                 width 100%;
             }
+        }
+    }
+}
+
+.archived-items {
+    // display: none;
+    #archived-item-container>.item>.item-section {
+        &.item-label {
+            width 100%;
+        }
+        &.item-tick {
+            width 0;
+        }
+        &.item-del {
+            width 0;
         }
     }
 }

@@ -33,25 +33,32 @@ html(class='no-js')
 
     //- Page structure
     .outer-container
-      .header
-        h1 Toodles
-        //- h2= message
-        h3#connection-status.connecting Connecting
-      #item-container.items-container
-        //- Generate open items
-        each item, index in openItems
-          +itemTemplate(index+1, true, item.title, item.id)
-        +itemTemplate(openItems.length+1, true)
+      .items
+        .header
+          h1 Toodles
+          //- h2= message
+          h3#connection-status.connecting Connecting
+        #item-container.item-container
+          //- Generate open items
+          each item, index in openItems
+            +itemTemplate(index+1, true, item.title, item.id)
+          +itemTemplate(openItems.length+1, true)
+      
+      .open-items
+        .header.divider
+          h2 Completed
+        #completed-item-container.item-container
+          //- Generate completed items
+          //- - completedItems.reverse()
+          each item, index in completedItems
+            +itemTemplate(index+1, false, item.title, item.id)
 
-
-      .header.divider
-        h2 Completed
-      #completed-item-container.items-container.completed
-        //- Generate completed items
-        - completedItems.reverse()
-        each item, index in completedItems
-          +itemTemplate(index+1, false, item.title, item.id)
-
+      .archived-items
+        .header.divider
+          h2 Archived
+        #archived-item-container.item-container
+          each item, index in archivedItems
+            +itemTemplate(index+1, false, item.title, item.id)
 
 
 

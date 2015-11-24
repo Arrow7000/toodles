@@ -1,6 +1,11 @@
 var typeCount = 0,
 	dbOpenItems = [],
-	dbCompletedItems = [];
+	dbCompletedItems = [],
+	model = {
+		openItems: [],
+		completedItems: [],
+		archivedItems: []
+	};
 
 // Empty object
 var emptyItem = {
@@ -11,7 +16,7 @@ var emptyItem = {
 // var itemHTML = $("#item-template").html();
 // var template = Handlebars.compile(itemHTML);
 
-var itemTemplate = '<div class="item appear" data-item-stored="false" data-item-order="n"><div class="item-section item-del"><i class="fa fa-times"></i></div><div class="item-section item-label"></div><div class="item-section item-tick"><i class="fa fa-check"></i></div>';
+var itemTemplate = '<div class="item appear" data-item-stored="false"><div class="item-section item-del"><i class="fa fa-times"></i></div><div class="item-section item-label"></div><div class="item-section item-tick"><i class="fa fa-check"></i></div>';
 
 
 
@@ -22,6 +27,7 @@ $(document).ready(function() {
 	// Variable assignment for speedier DOM element grabbing
 	var itemContainer = $("#item-container");
 	var completedItemContainer = $("#completed-item-container");
+	var archivedItemContainer = $('#archived-item-container');
 
 
 
@@ -36,6 +42,12 @@ $(document).ready(function() {
 		console.log('Now connected!');
 		// Changes status to display 'connected'
 		$('#connection-status').removeClass().addClass('connected').text('Connected');
+
+		// Synchronise models when connection happens
+		server.on('connectionUpdate', function(data) {
+			syncModels(model, data);
+		});
+		console.log(model);
 
 		makeEditable(itemContainer, true);
 	});
@@ -56,7 +68,7 @@ $(document).ready(function() {
 	});
 
 
-
+	// Blur event
 	$(document).on('blur', '.item-label', function(e) {
 		var content = $(this).text();
 		var item = $(this).parent();
@@ -83,78 +95,9 @@ $(document).ready(function() {
 			}
 		}
 	});
-	/*
-		Logic for blur event:
-
-		if: item is stored (d-i-s=true):
-			if: has text:
-				editEvent
-			else (empty):
-				deleteEvent
-		else (item not stored):
-			if: has text:
-				newItemSave
-			else (empty):
-				if: item is second-to-last:
-					delete last item
-	*/
 
 
-
-
-
-
-
-	////// Server 'callbacks' to events
-
-	// Feedback from server that item save is successful
-	server.on('newItemSaved', function(data) {
-		console.log('Save of "' + data.title + '" successful!');
-
-		// Checks for matching item label (cos there's no other way to link the saved item to its response from the server, as they're separate events)
-		var matched = false;
-		for (var i = itemContainer.children().length - 1; i >= 1; i--) {
-			var item = itemContainer.find('>:nth-child(' + i + ')');
-			// Checks matching item and makes 
-			if (data.title === item.find('.item-label').text()) {
-				matched = true;
-				console.log(data._id);
-				item.attr('data-item-id', data._id);
-				item.attr('data-item-stored', "true");
-				// console.log("Item " + i + " is a match!");
-				break;
-			}
-		}
-		if (matched) {
-			// console.log("Found a match for " + data.title);
-		} else {
-			// console.log("Couldn't find a match for item");
-		}
-	});
-	server.on('itemEdited', function(data) {
-		console.log("Item edited", data);
-	});
-	server.on('itemDeleted', function(data) {
-		console.log("Item deleted: ", data.title);
-	});
-
-	// Responses to other users' actions
-	server.on('coopNewItemSaved', function(data) {
-		coopNewItemSaved(itemContainer, data);
-	});
-	server.on('coopItemEdited', function(data) {
-		coopItemEdited(data);
-	});
-	server.on('coopItemTicked', function(data) {
-		coopItemTicked(data);
-	});
-	server.on('coopItemArchived', function(data) {
-		coopItemArchived(data);
-	});
-
-
-
-	///// Button tap events
+	/// Button tap events
 
 	// Tap 'tick' button
 	$(document).on('tap', '#item-container .item-tick', function(e) {
@@ -181,7 +124,7 @@ $(document).ready(function() {
 
 
 
-	///// Typing events
+	/// Typing events
 
 	// Events for all keys other than Enter (both types) and Tab
 	$(document).on('keyup', '.item-label', function(e) {
@@ -198,6 +141,99 @@ $(document).ready(function() {
 			focusNext($(this).parent());
 		} else if (e.which == 9) {}
 	});
+
+
+
+	////// Server 'callbacks' to events
+
+	// Feedback from server that item save is successful
+	server.on('newItemSaved', function(data) {
+		if (itemContainer.find('[data-item-stored="false"]:not(:last-child)').length === 0) {
+			newItemAppear(itemContainer, true, true, data.title, data._id);
+		} else {
+			var item = itemContainer.find('.item:nth-child(' + (data.index + 1) + ')');
+			item.attr('data-item-id', data._id);
+			item.attr('data-item-stored', "true");
+		}
+		console.log('Save of "' + data.title + '" successful!', data);
+	});
+
+
+	server.on('itemEdited', function(data) {
+		var itemLabel = $(document).find('[data-item-id="' + data._id + '"').find('.item-label');
+		if (itemLabel.text() !== data.title) {
+			itemLabel.text(data.title);
+		}
+		console.log("Item edited", data);
+	});
+
+
+	server.on('itemTicked', function(data) {
+		var tickedItem = $(document).find('div.item').filter('[data-item-id="' + data._id + '"]');
+		if (!tickedItem.hasClass('ticked')) {
+			makeEditable(tickedItem, false);
+			tickedItem.addClass('ticked');
+		}
+		console.log("Item ticked: ", data);
+		setTimeout(function() {
+			tickedItem.prependTo(completedItemContainer);
+			tickedItem.removeClass('ticked').addClass('appear');
+		}, 1000);
+	});
+
+
+	server.on('itemUnticked', function(data) {
+		var untickedItem = completedItemContainer.find('div.item').filter('[data-item-id="' + data._id + '"]');
+		if (!untickedItem.hasClass('ticked')) {
+			untickedItem.addClass('ticked');
+		}
+		console.log("Item unticked: ", data);
+		setTimeout(function() {
+			untickedItem.insertBefore(itemContainer.find('.item:last-child'));
+			makeEditable(untickedItem, true);
+			untickedItem.removeClass('ticked').addClass('appear');
+		}, 1000);
+	});
+
+
+	server.on('itemArchived', function(data) {
+		var archivedItem = completedItemContainer.find('div.item').filter('[data-item-id="' + data._id + '"]');
+		if (!archivedItem.hasClass('deleted')) {
+			archivedItem.addClass('deleted');
+		}
+		console.log("Item archived: ", data);
+		setTimeout(function() {
+			archivedItem.prependTo(archivedItemContainer);
+			archivedItem.removeClass('deleted').addClass('appear');
+		}, 1000);
+	});
+
+
+	server.on('itemDeleted', function(data) {
+		var item = itemContainer.find('div.item').filter('[data-item-id="' + data._id + '"]');
+		if (!item.hasClass('deleted')) {
+			item.addClass('deleted');
+		}
+		console.log("Item deleted: ", data.title);
+	});
+
+
+
+
+
+
+
+	// /// Responses to other users' actions
+	// server.on('coopNewItemSaved', function(data) {
+	// 	newItemAppear(itemContainer, true, true, data.title, data._id);
+	// });
+
+
+
+
+
+
+
 
 
 
@@ -254,14 +290,22 @@ $(document).ready(function() {
 		that.next().find('.item-label').focus();
 	}
 
-	//////// CRUD operations
+	function syncModels(model1, model2) {
+		model1.openItems = model2.openItems;
+		model1.completedItems = model2.completedItems;
+		model1.archivedItems = model2.archivedItems;
+
+	}
+
+	//////// CRUD operations (actually SETUAD)
 	function newItemSave(that) {
 		var item = that;
 		var content = item.find('.item-label').text();
 
 		console.log("Saving new item: ", content);
 		server.emit('newItemSave', {
-			title: content
+			title: content,
+			index: item.index()
 		});
 	}
 
@@ -278,41 +322,19 @@ $(document).ready(function() {
 		var item = that;
 		var id = item.attr('data-item-id');
 		var title = item.find('.item-label').text();
+
 		if (item.attr('data-item-stored') === "true") {
-			console.log("Ticking item ", id, title);
-			makeEditable(item, false);
-			item.addClass('ticked');
 			server.emit('itemTick', {
 				_id: id,
 				title: title
 			});
+			console.log("Ticking item ", id, title);
+			makeEditable(item, false);
+			item.addClass('ticked');
+
 		}
 	}
 
-	// On confirmation from the server
-	server.on('itemTicked', function(data) {
-		var tickedItem = itemContainer.find('div.item').filter('[data-item-id="' + data._id + '"]');
-		console.log("Item ticked: ", data);
-		setTimeout(function() {
-			tickedItem.prependTo(completedItemContainer);
-			tickedItem.removeClass('ticked').addClass('appear');
-		}, 1000);
-	});
-
-	function itemDelete(that) {
-		var item = that;
-		item.addClass('deleted');
-		server.emit('itemDelete', {
-			_id: item.attr('data-item-id'),
-			title: item.find('.item-label').text()
-		});
-	}
-
-	server.on('coopItemDeleted', function(data) {
-		coopItemDeleted(data);
-	});
-
-	// Unticking an item
 	function itemUntick(that) {
 		var item = that;
 		var title = item.find('.item-label').text();
@@ -326,29 +348,6 @@ $(document).ready(function() {
 		});
 	}
 
-	// On confirmation from the server
-	server.on('itemUnticked', function(data) {
-		var untickedItem = completedItemContainer.find('div.item').filter('[data-item-id="' + data._id + '"]');
-		// untickedItem.addClass('ticked');
-		console.log("Item unticked: ", data);
-		setTimeout(function() {
-			untickedItem.insertBefore(itemContainer.find('.item:last-child'));
-			makeEditable(untickedItem, true);
-			untickedItem.removeClass('ticked').addClass('appear');
-		}, 1000);
-	});
-
-	server.on('coopItemUnticked', function(data) {
-		var untickedItem = completedItemContainer.find('div.item').filter('[data-item-id="' + data._id + '"]');
-		untickedItem.addClass('ticked');
-		console.log("Item unticked: ", data);
-		setTimeout(function() {
-			untickedItem.insertBefore(itemContainer.find('.item:last-child'));
-			makeEditable(untickedItem, true);
-			untickedItem.removeClass('ticked').addClass('appear');
-		}, 1000);
-	});
-
 	function itemArchive(that) {
 		var item = that;
 		var content = item.find('.item-label').text();
@@ -357,41 +356,16 @@ $(document).ready(function() {
 			_id: item.attr('data-item-id'),
 			title: item.find('.item-label').text()
 		});
-		server.on('itemArchived', function(data) {
-			console.log("Item archived: ", data);
+	}
+
+	function itemDelete(that) {
+		var item = that;
+		item.addClass('deleted');
+		server.emit('itemDelete', {
+			_id: item.attr('data-item-id'),
+			title: item.find('.item-label').text()
 		});
 	}
-
-	function coopItemArchived(itemData) {
-		var archivedItem = completedItemContainer.find('div.item').filter('[data-item-id="' + itemData._id + '"]');
-		archivedItem.addClass('deleted');
-		console.log("Item archived: ", itemData);
-	}
-
-	function coopNewItemSaved(parent, itemData) {
-		newItemAppear(parent, true, true, itemData.title, itemData._id);
-	}
-
-	function coopItemEdited(itemData) {
-		$(document).find('[data-item-id="' + itemData._id + '"').find('.item-label').text(itemData.title);
-	}
-
-	function coopItemTicked(itemData) {
-		var tickedItem = itemContainer.find('div.item').filter('[data-item-id="' + itemData._id + '"]');
-		makeEditable(tickedItem, false);
-		tickedItem.addClass('ticked');
-		console.log("Item ticked: ", itemData);
-		setTimeout(function() {
-			tickedItem.prependTo(completedItemContainer);
-			tickedItem.removeClass('ticked').addClass('appear');
-		}, 1000);
-	}
-
-	function coopItemDeleted(itemData) {
-		var item = itemContainer.find('div.item').filter('[data-item-id="' + itemData._id + '"]');
-		item.addClass('deleted');
-	}
-
 
 
 
@@ -449,7 +423,6 @@ $(document).ready(function() {
 
 
 
-
 /* Actions
 To server:
 	newItemSave
@@ -468,13 +441,6 @@ From server to client:
 		itemArchived
 		itemDeleted
 
-	Potential multicoop acts:
-		coopNewItemSaved
-		coopItemEdited
-		coopItemTicked
-		coopItemUnticked
-		coopItemArchived
-		coopItemDeleted
 
 
 

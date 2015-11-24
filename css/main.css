@@ -136,14 +136,14 @@ h3#connection-status.connected {
 h3#connection-status.disconnected {
   color: #f00;
 }
-.items-container .item {
+.item-container .item {
   width: 100%;
   color: #fefefe;
   display: block;
   text-align: center;
   overflow: hidden;
 }
-.items-container .item .item-section {
+.item-container .item .item-section {
   padding-top: 25px;
   padding-bottom: 25px;
   overflow: hidden;
@@ -151,7 +151,7 @@ h3#connection-status.disconnected {
   margin-bottom: 25px;
   transition: background-color 0.5s ease-in, width 0.5s ease-in, padding-left 0.5s ease-in, padding-right 0.5s ease-in, max-height 0.5s 0.5s ease-in, padding-top 0.5s 0.5s ease-in, padding-bottom 0.5s 0.5s ease-in, margin-bottom 0.6s 0.5s ease-in;
 }
-.items-container .item .item-section.item-label {
+.item-container .item .item-section.item-label {
   background-color: #639;
   width: 65%;
   float: left;
@@ -162,114 +162,135 @@ h3#connection-status.disconnected {
   padding-left: 25px;
   white-space: nowrap;
 }
-.items-container .item .item-section.item-label:empty:last-child:before {
+.item-container .item .item-section.item-label:empty:last-child:before {
   content: "Add an item";
   display: block;
 }
-.items-container .item .item-section.item-label:empty:before {
+.item-container .item .item-section.item-label:empty:before {
   content: "Add an item";
   display: block;
 }
-.items-container .item .item-section.item-tick {
+.item-container .item .item-section.item-tick {
   width: 25%;
   background-color: #26a65b;
   float: left;
 }
-.items-container .item .item-section.item-del {
+.item-container .item .item-section.item-del {
   width: 10%;
   background-color: #d2527f;
   float: left;
 }
-.items-container .item.empty .item-label {
+.item-container .item.empty .item-label {
   width: 100%;
   background-color: rgba(102,51,153,0.25);
 }
-.items-container .item.empty .item-tick {
+.item-container .item.empty .item-tick {
   width: 0;
 }
-.items-container .item.empty .item-del {
+.item-container .item.empty .item-del {
   width: 0;
 }
-.items-container .item.ticked .item-section {
+.item-container .item.ticked .item-section {
   max-height: 0;
   padding: 0;
   margin-bottom: 0;
 }
-.items-container .item.ticked .item-label {
+.item-container .item.ticked .item-label {
   width: 0;
   padding-right: 0;
   padding-left: 0;
 }
-.items-container .item.ticked .item-tick {
+.item-container .item.ticked .item-tick {
   width: 100%;
 }
-.items-container .item.ticked .item-del {
+.item-container .item.ticked .item-del {
   width: 0;
 }
-.items-container .item.deleted .item-section {
+.item-container .item.deleted .item-section {
   max-height: 0;
   padding: 0;
   margin-bottom: 0;
 }
-.items-container .item.deleted .item-label {
+.item-container .item.deleted .item-label {
   width: 0;
   padding-right: 0;
   padding-left: 0;
 }
-.items-container .item.deleted .item-tick {
+.item-container .item.deleted .item-tick {
   width: 0;
 }
-.items-container .item.deleted .item-del {
+.item-container .item.deleted .item-del {
   width: 100%;
 }
-.items-container .item.appear {
+.item-container .item.appear {
   -webkit-animation: itemAppear 0.5s forwards;
 }
-.items-container .item.disappear {
+.item-container .item.disappear {
   -webkit-animation: itemDisappear 0.5s forwards;
 }
-.items-container.completed {
+.item-container#completed-item-container,
+.item-container#archived-item-container {
   margin-bottom: 150px;
 }
-.items-container.completed .item-section.item-label {
+.item-container#completed-item-container .item-section.item-label,
+.item-container#archived-item-container .item-section.item-label {
   background-color: rgba(102,51,153,0.5);
   width: 70%;
 }
-.items-container.completed .item-section.item-tick {
+.item-container#completed-item-container .item-section.item-tick,
+.item-container#archived-item-container .item-section.item-tick {
   background-color: rgba(38,166,91,0.5);
   width: 20%;
 }
-.items-container.completed .item-section.item-tick i:before {
+.item-container#completed-item-container .item-section.item-tick i:before,
+.item-container#archived-item-container .item-section.item-tick i:before {
   content: "\f106";
 }
-.items-container.completed .item-section.item-del {
+.item-container#completed-item-container .item-section.item-del,
+.item-container#archived-item-container .item-section.item-del {
   background-color: rgba(210,82,127,0.5);
   width: 10%;
 }
-.items-container.completed .item-section.item-del i.fa.fa-times:before {
+.item-container#completed-item-container .item-section.item-del i.fa.fa-times:before,
+.item-container#archived-item-container .item-section.item-del i.fa.fa-times:before {
   content: "\f187";
 }
-.items-container.completed .ticked .item-label {
+.item-container#completed-item-container .ticked .item-label,
+.item-container#archived-item-container .ticked .item-label {
   width: 0;
   padding-right: 0;
   padding-left: 0;
 }
-.items-container.completed .ticked .item-tick {
+.item-container#completed-item-container .ticked .item-tick,
+.item-container#archived-item-container .ticked .item-tick {
   width: 100%;
 }
-.items-container.completed .ticked .item-del {
+.item-container#completed-item-container .ticked .item-del,
+.item-container#archived-item-container .ticked .item-del {
   width: 0;
 }
-.items-container.completed .deleted .item-label {
+.item-container#completed-item-container .deleted .item-label,
+.item-container#archived-item-container .deleted .item-label {
   width: 0;
   padding-right: 0;
   padding-left: 0;
 }
-.items-container.completed .deleted .item-tick {
+.item-container#completed-item-container .deleted .item-tick,
+.item-container#archived-item-container .deleted .item-tick {
   width: 0;
 }
-.items-container.completed .deleted .item-del {
+.item-container#completed-item-container .deleted .item-del,
+.item-container#archived-item-container .deleted .item-del {
   width: 100%;
+}
+.archived-items #archived-item-container>.item>.item-section.item-label {
+  width: 100%;
+}
+.archived-items #archived-item-container>.item>.item-section.item-tick {
+  width: 0;
+}
+.archived-items #archived-item-container>.item>.item-section.item-del {
+  width: 0;
 }
 /* ==========================================================================
    Helper classes
