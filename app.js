@@ -171,12 +171,9 @@ io.on('connection', function(client) {
 			io.emit('newItemSaved', {
 				title: data.title,
 				_id: result.id,
-				index: data.index
+				index: data.index,
+				tempID: data.tempID
 			});
-			// client.broadcast.emit('coopNewItemSaved', {
-			// 	title: data.title,
-			// 	_id: result.id
-			// });
 		});
 	});
 

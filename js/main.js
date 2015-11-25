@@ -55,10 +55,6 @@ $(document).ready(function() {
 
 
 
-
-
-
-
 	// Disconnect event
 	server.on('disconnect', function(client) {
 		console.log('Disconnected');
@@ -68,10 +64,27 @@ $(document).ready(function() {
 	});
 
 
+
+
+	// Focus event
+	$(document).on('focus', '.item-label', function(e) {
+		var content = $(this).text();
+		var item = $(this).parent();
+		var tempID = genID();
+
+		item.attr('data-temp-id', tempID);
+
+	});
+
+
 	// Blur event
 	$(document).on('blur', '.item-label', function(e) {
 		var content = $(this).text();
 		var item = $(this).parent();
+		setTimeout(function() {
+			item.removeAttr('data-temp-id');
+		}, 500);
+
 
 		if (item.attr('data-item-stored') === "true") {
 			if (content.length > 0) {
@@ -148,10 +161,13 @@ $(document).ready(function() {
 
 	// Feedback from server that item save is successful
 	server.on('newItemSaved', function(data) {
-		if (itemContainer.find('[data-item-stored="false"]:not(:last-child)').length === 0) {
+		var item = $(document).find('[data-temp-id="' + data.tempID + '"]');
+		// console.log(item);
+		if (item.length === 0) {
 			newItemAppear(itemContainer, true, true, data.title, data._id);
 		} else {
-			var item = itemContainer.find('.item:nth-child(' + (data.index + 1) + ')');
+			// var item = itemContainer.find('.item:nth-child(' + (data.index + 1) + ')');
+			// item.removeAttr('data-temp-id');
 			item.attr('data-item-id', data._id);
 			item.attr('data-item-stored', "true");
 		}
@@ -160,10 +176,18 @@ $(document).ready(function() {
 
 
 	server.on('itemEdited', function(data) {
-		var itemLabel = $(document).find('[data-item-id="' + data._id + '"').find('.item-label');
-		if (itemLabel.text() !== data.title) {
-			itemLabel.text(data.title);
+		var item = $(document).find('[data-item-id="' + data._id + '"]');
+		var giver = $(document).find('[data-temp-id="' + data.tempID + '"]');
+		var label = item.find('.item-label');
+
+		if (giver.length === 0) {
+			label.text(data.title);
+			console.log("This is receiving");
+		} else {
+			// item.removeAttr('data-temp-id');
+			console.log("This is giving");
 		}
+
 		console.log("Item edited", data);
 	});
 
@@ -229,20 +253,22 @@ $(document).ready(function() {
 
 
 
-
-
 	///// Functions
 
 
 	// What happens every time user presses a key (should be invoked above)
 	function typeEvent(that) {
+		var label = $(that);
 		var item = $(that).parent();
 		var nextItem = item.next('.item');
+		// console.log(caret(label));
 		// what happens when field has text in it
-		if ($(that).text().length > 0) {
+		if (label.text().length > 0) {
 			item.removeClass('empty');
+			itemEdit(item);
 			if (item.is(':last-child')) {
-				newItemAppear(itemContainer, true, true)
+				newItemAppear(itemContainer, true, true);
+				newItemSave(item);
 			}
 		} else {
 			if (nextItem.is(':last-child')) {
@@ -256,6 +282,18 @@ $(document).ready(function() {
 		}
 	}
 
+	/*	
+	Logic for typing in item-labels:
+
+		if: has text:
+			class shouldn't contain 'empty'
+			if: item is last:
+				generate item underneath
+		else (is empty): 
+			if: item is penultimate:
+				add 'empty' class
+				remove next item
+	*/
 
 
 
@@ -276,10 +314,14 @@ $(document).ready(function() {
 	function newItemSave(that) {
 		var item = that;
 		var content = item.find('.item-label').text();
+		// var tempID = genID();
+		var tempID = that.attr('data-temp-id');
+		// console.log("New item's tempID: " + tempID);
 
 		console.log("Saving new item: ", content);
 		server.emit('newItemSave', {
 			title: content,
+			tempID: tempID,
 			index: item.index()
 		});
 	}
@@ -287,9 +329,16 @@ $(document).ready(function() {
 	function itemEdit(that) {
 		var item = that;
 		var content = item.find('.item-label').text();
+		// var tempID = genID();
+		// that.attr('data-temp-id', tempID);
+		// console.log("Edited item's tempID: " + tempID);
+
+		var tempID = item.attr('data-temp-id');
+
 		server.emit('itemEdit', {
 			_id: item.attr('data-item-id'),
-			title: content
+			title: content,
+			tempID: tempID
 		});
 	}
 
@@ -341,12 +390,12 @@ $(document).ready(function() {
 			title: item.find('.item-label').text()
 		});
 	}
-	/// End of CRUD operations
 
 
 
 
-	// Makes item contenteditable - or not
+
+	// Makes item contenteditable
 	function makeEditable(item, bool) {
 		item.find('.item-label').attr('contenteditable', bool);
 	}
@@ -371,10 +420,11 @@ $(document).ready(function() {
 		}
 	}
 
-	// Used primarily for making a new blank item appear
 	function itemDisappear(item) {
 		item.removeClass('appear').addClass('disappear');
 	}
+
+
 
 	// Changes the text in a field
 	function message(field, text) {
@@ -387,11 +437,31 @@ $(document).ready(function() {
 		setTimeout(message(field, currText), duration);
 	}
 
-	// Moves item to the index specified and moves all below down
-	function moveToIndex(item, targetIndex) {
-		// body...
+	function genID() {
+		var string = '';
+		var chars = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 'a', 'b', 'c', 'd', 'e', 'f'];
+		for (var i = 0; i < 8; i++) {
+			string += chars[Math.floor(Math.random() * 16)]
+		}
+		return string;
 	}
 
+	function caret(node) {
+		//node.focus(); 
+		/* without node.focus() IE will returns -1 when focus is not on node */
+		if (node.selectionStart) return node.selectionStart;
+		else if (!document.selection) return 0;
+		var c = "\001";
+		var sel = document.selection.createRange();
+		var dul = sel.duplicate();
+		var len = 0;
+		dul.moveToElementText(node);
+		sel.text = c;
+		len = (dul.text.indexOf(c));
+		sel.moveStart('character', -1);
+		sel.text = "";
+		return len;
+	}
 
 
 
