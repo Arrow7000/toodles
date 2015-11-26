@@ -12,9 +12,6 @@ var emptyItem = {
 	title: ""
 };
 
-// Handlebars functions
-// var itemHTML = $("#item-template").html();
-// var template = Handlebars.compile(itemHTML);
 
 var itemTemplate = '<div class="item appear" data-item-stored="false"><div class="item-section item-del"><i class="fa fa-times"></i></div><div class="item-section item-label"></div><div class="item-section item-tick"><i class="fa fa-check"></i></div>';
 
@@ -183,6 +180,10 @@ $(document).ready(function() {
 		if (giver.length === 0) {
 			label.text(data.title);
 			console.log("This is receiving");
+			makeEditable(item, false);
+			setTimeout(function() {
+				makeEditable(item, true);
+			}, 1000);
 		} else {
 			// item.removeAttr('data-temp-id');
 			console.log("This is giving");

@@ -203,7 +203,6 @@ io.on('connection', function(client) {
 		}, function() {
 			console.log("Item " + data.title + " deleted.");
 			io.emit('itemDeleted', data);
-			// client.broadcast.emit('coopItemDeleted', data);
 		});
 	});
 
@@ -218,7 +217,6 @@ io.on('connection', function(client) {
 		}, function() {
 			console.log("Item ticked: ", data.title);
 			io.emit('itemTicked', data);
-			// client.broadcast.emit('coopItemTicked', data);
 		});
 	});
 
@@ -233,7 +231,6 @@ io.on('connection', function(client) {
 		}, function() {
 			console.log("Item unticked: ", data.title);
 			io.emit('itemUnticked', data);
-			// client.broadcast.emit('coopItemUnticked', data);
 		});
 	});
 
@@ -248,7 +245,6 @@ io.on('connection', function(client) {
 		}, function() {
 			console.log("Item archived: ", data.title);
 			io.emit('itemArchived', data);
-			// client.broadcast.emit('coopItemArchived', data);
 		});
 	});
 
