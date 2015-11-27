@@ -105,7 +105,7 @@ io.on('connection', function(client) {
 	// syncModels(from, to);
 
 	client.emit('connectionUpdate', model);
-	console.log(model);
+	// console.log(model);
 
 
 
