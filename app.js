@@ -3,6 +3,9 @@ var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
 var mongoose = require('mongoose');
+// Stuff for multiuser support
+var cookieParser = require('cookie-parser');
+var session = require('client-sessions');
 
 /// Variable assignments
 // The model object! Contains all non-archived items, both complete and open
@@ -23,7 +26,7 @@ mongoose.connect('mongodb://heroku_bksj92g6:77ehmrlo36tj9hl2jae87kdohv@ds051524.
 // Abbrev.
 // var db = mongoose.connection;
 
-// Defining a schema and assigning to collection
+// Defining an item schema and assigning to collection
 var itemSchema = mongoose.Schema({
 	title: String,
 	completed: Boolean,
@@ -35,7 +38,19 @@ var itemSchema = mongoose.Schema({
 // Applying the above schema to 'Item' model
 var Item = mongoose.model('Item', itemSchema);
 
+// Defining a user schema and assigning to collection
+var userSchema = mongoose.Schema({
+	username: String
+}, {
+	collection: 'users',
+	versionKey: false
+});
+// Applying the above schema to 'User' model
+var User = mongoose.model('User', userSchema);
 
+// User.create({
+// 	username: "arrow7000"
+// });
 
 
 /// Server configuration (only when database connection is complete)
@@ -46,6 +61,21 @@ app.use("/css", express.static(__dirname + "/css"));
 // Sets views folder and engine
 app.set('views', __dirname + '/views')
 app.set('view engine', 'jade');
+
+// Use cookie-parser
+app.use(cookieParser())
+
+
+
+
+app.use(session({
+	cookieName: 'session',
+	secret: "3oajbycfzh04m3ng99a71qot",
+	duration: 30 * 60 * 1000,
+	activeDuration: 5 * 60 * 1000,
+}));
+
+
 // Send & response function
 
 // set port
@@ -53,8 +83,22 @@ var port = (process.env.PORT || 5000);
 server.listen(port, function() {
 	console.log('Server now running...');
 });
-app.get('/', function(req, res) {
 
+app.get('/login', function(req, res, next) {
+	res.render('login');
+	next();
+});
+
+app.post('/login', function(req, res) {
+	console.log(req.body);
+
+});
+
+
+
+app.get('/', function(req, res) {
+	console.log("Cookies: ", req.cookies)
+	res.cookie('name', 'aron');
 	Item.find({}, function(err, docs) {
 		/// First sets the model object
 		var activeItems = docs.filter(function(obj) {
@@ -105,51 +149,7 @@ io.on('connection', function(client) {
 	// syncModels(from, to);
 
 	client.emit('connectionUpdate', model);
-	console.log(model);
-
-
-
-
-
-
-	// New revamped events that occur on server when items are changed
-	// client.on('newItemSave', function(data) {
-	// 	// body...
-	// });
-	// client.on('itemChange', function(data) {
-	// 	Item.update({
-	// 		_id: data._id
-	// 	}, {
-	// 		$set: {
-	// 			title: data.title
-	// 		}
-	// 	}, function(err, result) {
-	// 		if (err) {
-	// 			console.log("Error", err);
-	// 		} else {
-	// 			console.log("item updated.", data);
-	// 			client.emit('itemEdited', data);
-	// 			client.broadcast.emit('coopItemEdited', data);
-	// 		}
-	// 	});
-	// });
-	// client.on('itemDelete', function(data) {
-	// 	// body...
-	// });
-
-
-
-
-
-
-	// Update server model
-	// syncModels(from, to);
-
-	// Send out updated model to all clients
-
-
-	// Server job finished. Now client does the rest. 
-
+	// console.log(model);
 
 
 
@@ -271,4 +271,14 @@ function syncModels(from, to) {
 	to.openItems = from.openItems;
 	to.completedItems = from.completedItems;
 	to.archivedItems = from.archivedItems;
+}
+
+function genID() {
+	var string = '';
+	var chars = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
+	for (var i = 0; i < 24; i++) {
+		string += chars[Math.floor(Math.random() * chars.length)]
+	}
+	console.log(chars.length);
+	return string;
 }
