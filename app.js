@@ -6,6 +6,8 @@ var mongoose = require('mongoose');
 // Stuff for multiuser support
 var cookieParser = require('cookie-parser');
 var session = require('client-sessions');
+var bodyParser = require("body-parser");
+
 
 /// Variable assignments
 // The model object! Contains all non-archived items, both complete and open
@@ -40,7 +42,8 @@ var Item = mongoose.model('Item', itemSchema);
 
 // Defining a user schema and assigning to collection
 var userSchema = mongoose.Schema({
-	username: String
+	username: String,
+	password: String
 }, {
 	collection: 'users',
 	versionKey: false
@@ -63,7 +66,12 @@ app.set('views', __dirname + '/views')
 app.set('view engine', 'jade');
 
 // Use cookie-parser
-app.use(cookieParser())
+app.use(cookieParser());
+
+// Use body parser
+app.use(bodyParser.urlencoded({
+	extended: false
+}));
 
 
 
@@ -84,21 +92,50 @@ server.listen(port, function() {
 	console.log('Server now running...');
 });
 
-app.get('/login', function(req, res, next) {
-	res.render('login');
+// Universal handler
+app.all('*', function(req, res, next) {
+	res.cookie('username', 'arrow7000');
 	next();
+})
+
+
+// Loads the page on http request
+app.get('/login', function(req, res) {
+	res.render('login', {
+		error: ''
+	});
 });
 
+// Login POST handler
 app.post('/login', function(req, res) {
-	console.log(req.body);
+	console.log(req.body.username);
+	console.log(req.body.password);
 
+	User.findOne({
+		username: req.body.username
+	}, function(err, user) {
+		if (!user) {
+			res.render('login', {
+				error: 'Username or password wrong. Please try again.'
+			});
+		} else {
+			if (req.body.password === user.password) {
+				req.session.username = user;
+				// Sends user to app front page
+				res.redirect('/');
+			} else {
+				res.render('login', {
+					error: 'Username or password wrong. Please try again.'
+				});
+			}
+		}
+	});
 });
 
 
 
 app.get('/', function(req, res) {
 	console.log("Cookies: ", req.cookies)
-	res.cookie('name', 'aron');
 	Item.find({}, function(err, docs) {
 		/// First sets the model object
 		var activeItems = docs.filter(function(obj) {
@@ -120,11 +157,7 @@ app.get('/', function(req, res) {
 		// model.completedItems.reverse();
 		// Actually renders and sends the page, with the model object as the data
 		res.render('index', model);
-
 	});
-
-
-
 });
 
 // All other paths result in 404

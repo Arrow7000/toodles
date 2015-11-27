@@ -12,6 +12,7 @@
   "author": "Aron Adler",
   "license": "ISC",
   "dependencies": {
+    "body-parser": "^1.14.1",
     "client-sessions": "^0.7.0",
     "cookie-parser": "^1.4.0",
     "express": "^4.13.3",
