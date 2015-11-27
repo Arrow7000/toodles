@@ -283,6 +283,9 @@ h3#connection-status.disconnected {
 .item-container#archived-item-container .deleted .item-del {
   width: 100%;
 }
+.archived-items {
+  display: none;
+}
 .archived-items #archived-item-container>.item>.item-section.item-label {
   width: 100%;
 }
