@@ -32,13 +32,16 @@ mongoose.connect('mongodb://heroku_bksj92g6:77ehmrlo36tj9hl2jae87kdohv@ds051524.
 var itemSchema = mongoose.Schema({
 	title: String,
 	completed: Boolean,
-	archived: Boolean
+	archived: Boolean,
+	ownerID: String
 }, {
 	collection: 'items',
 	versionKey: false
 });
 // Applying the above schema to 'Item' model
 var Item = mongoose.model('Item', itemSchema);
+
+
 
 // Defining a user schema and assigning to collection
 var userSchema = mongoose.Schema({
@@ -52,7 +55,8 @@ var userSchema = mongoose.Schema({
 var User = mongoose.model('User', userSchema);
 
 // User.create({
-// 	username: "arrow7000"
+// 	username: "arrow7000",
+//  password: "hi"
 // });
 
 
@@ -132,8 +136,11 @@ app.post('/login', function(req, res) {
 });
 
 
-
 app.get('/', function(req, res) {
+
+	Item.find({}, function(err, docs) {
+		docs.ownerID = "565838326b2bf4c424ce851d";
+	});
 
 
 	if (req.session && req.session.user) { // Check if session exists
@@ -152,7 +159,9 @@ app.get('/', function(req, res) {
 
 				// render the home page
 				console.log("Cookies: ", req.cookies)
-				Item.find({owner: user._id}, function(err, docs) {
+				Item.find({
+					ownerID: "565838326b2bf4c424ce851d"
+				}, function(err, docs) {
 					/// First sets the model object
 					var activeItems = docs.filter(function(obj) {
 						return obj.archived === false;
@@ -220,7 +229,7 @@ io.on('connection', function(client) {
 
 	// syncModels(from, to);
 
-	client.emit('connectionUpdate', model);
+	// client.emit('connectionUpdate', model);
 
 
 	// Item save event
