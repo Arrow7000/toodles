@@ -108,9 +108,8 @@ app.get('/login', function(req, res) {
 
 // Login POST handler
 app.post('/login', function(req, res) {
-	console.log(req.body.username);
-	console.log(req.body.password);
 
+	// Finds username in database and compares it to stored password
 	User.findOne({
 		username: req.body.username
 	}, function(err, user) {
@@ -120,7 +119,7 @@ app.post('/login', function(req, res) {
 			});
 		} else {
 			if (req.body.password === user.password) {
-				req.session.username = user;
+				req.session.user = user;
 				// Sends user to app front page
 				res.redirect('/');
 			} else {
@@ -135,30 +134,69 @@ app.post('/login', function(req, res) {
 
 
 app.get('/', function(req, res) {
-	console.log("Cookies: ", req.cookies)
-	Item.find({}, function(err, docs) {
-		/// First sets the model object
-		var activeItems = docs.filter(function(obj) {
-			return obj.archived === false;
+
+
+	if (req.session && req.session.user) { // Check if session exists
+		// lookup the user in the DB by pulling their email from the session
+		User.findOne({
+			username: req.session.user.username
+		}, function(err, user) {
+			if (!user) {
+				// if the user isn't found in the DB, reset the session info and
+				// redirect the user to the login page
+				req.session.reset();
+				res.redirect('/login');
+			} else {
+				// expose the user to the template
+				res.locals.user = user;
+
+				// render the home page
+				console.log("Cookies: ", req.cookies)
+				Item.find({owner: user._id}, function(err, docs) {
+					/// First sets the model object
+					var activeItems = docs.filter(function(obj) {
+						return obj.archived === false;
+					});
+					// Open items
+					model.openItems = activeItems.filter(function(obj) {
+						return obj.completed === false;
+					});
+					// Completed items
+					model.completedItems = activeItems.filter(function(obj) {
+						return obj.completed === true;
+					});
+					// Archived items
+					model.archivedItems = docs.filter(function(obj) {
+						return obj.archived === true;
+					});
+					// Reverse the completed items array, so that recent items appear first
+					// model.completedItems.reverse();
+					// Actually renders and sends the page, with the model object as the data
+					res.render('index', model);
+				});
+			}
 		});
-		// Open items
-		model.openItems = activeItems.filter(function(obj) {
-			return obj.completed === false;
-		});
-		// Completed items
-		model.completedItems = activeItems.filter(function(obj) {
-			return obj.completed === true;
-		});
-		// Archived items
-		model.archivedItems = docs.filter(function(obj) {
-			return obj.archived === true;
-		});
-		// Reverse the completed items array, so that recent items appear first
-		// model.completedItems.reverse();
-		// Actually renders and sends the page, with the model object as the data
-		res.render('index', model);
-	});
+	} else {
+		res.redirect('/login');
+	}
+
+
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // All other paths result in 404
 app.get('*', function(req, res) {
@@ -177,17 +215,12 @@ app.get('*', function(req, res) {
 
 // Client connection event and content
 io.on('connection', function(client) {
+	console.log(model);
 	console.log('Websocket connected...');
 
 	// syncModels(from, to);
 
 	client.emit('connectionUpdate', model);
-	// console.log(model);
-
-
-
-
-
 
 
 	// Item save event
