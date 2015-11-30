@@ -9,6 +9,7 @@ var session = require('client-sessions');
 var bodyParser = require("body-parser");
 
 
+
 /// Variable assignments
 // The model object! Contains all non-archived items, both complete and open
 var model = {
@@ -46,7 +47,8 @@ var Item = mongoose.model('Item', itemSchema);
 // Defining a user schema and assigning to collection
 var userSchema = mongoose.Schema({
 	username: String,
-	password: String
+	password: String,
+	email: String
 }, {
 	collection: 'users',
 	versionKey: false
@@ -96,9 +98,29 @@ server.listen(port, function() {
 	console.log('Server now running...');
 });
 
+app.use(function(req, res, next) {
+	if (req.session && req.session.user) {
+		User.findOne({
+			email: req.session.user.email
+		}, function(err, user) {
+			if (user) {
+				req.user = user;
+				delete req.user.password; // delete the password from the session
+				req.session.user = user; //refresh the session value
+				res.locals.user = user;
+			}
+			// finishing processing the middleware and run the route
+			next();
+		});
+	} else {
+		next();
+	}
+});
+
+
 // Universal handler
 app.all('*', function(req, res, next) {
-	res.cookie('username', 'arrow7000');
+	// res.cookie('username', 'arrow7000');
 	next();
 })
 
@@ -115,7 +137,11 @@ app.post('/login', function(req, res) {
 
 	// Finds username in database and compares it to stored password
 	User.findOne({
-		username: req.body.username
+		$or: [{
+			username: req.body.username
+		}, {
+			email: req.body.username
+		}]
 	}, function(err, user) {
 		if (!user) {
 			res.render('login', {
@@ -135,59 +161,61 @@ app.post('/login', function(req, res) {
 	});
 });
 
-
-app.get('/', function(req, res) {
-
-	Item.find({}, function(err, docs) {
-		docs.ownerID = "565838326b2bf4c424ce851d";
-	});
+app.get('/logout', function(req, res) {
+	req.session.reset();
+	res.redirect('/');
+});
 
 
-	if (req.session && req.session.user) { // Check if session exists
-		// lookup the user in the DB by pulling their email from the session
-		User.findOne({
-			username: req.session.user.username
-		}, function(err, user) {
-			if (!user) {
-				// if the user isn't found in the DB, reset the session info and
-				// redirect the user to the login page
-				req.session.reset();
-				res.redirect('/login');
-			} else {
-				// expose the user to the template
-				res.locals.user = user;
+app.get('/', requireLogin, function(req, res) {
 
-				// render the home page
-				console.log("Cookies: ", req.cookies)
-				Item.find({
-					ownerID: "565838326b2bf4c424ce851d"
-				}, function(err, docs) {
-					/// First sets the model object
-					var activeItems = docs.filter(function(obj) {
-						return obj.archived === false;
-					});
-					// Open items
-					model.openItems = activeItems.filter(function(obj) {
-						return obj.completed === false;
-					});
-					// Completed items
-					model.completedItems = activeItems.filter(function(obj) {
-						return obj.completed === true;
-					});
-					// Archived items
-					model.archivedItems = docs.filter(function(obj) {
-						return obj.archived === true;
-					});
-					// Reverse the completed items array, so that recent items appear first
-					// model.completedItems.reverse();
-					// Actually renders and sends the page, with the model object as the data
-					res.render('index', model);
-				});
-			}
+	// if (req.session && req.session.user) { // Check if session exists
+	// 	// lookup the user in the DB by pulling their email from the session
+	// 	console.log(req.session);
+	// 	User.findOne({
+	// 		username: req.session.user.username
+	// 	}, function(err, user) {
+	// 		if (!user) {
+	// 			// if the user isn't found in the DB, reset the session info and
+	// 			// redirect the user to the login page
+	// 			req.session.reset();
+	// 			res.redirect('/login');
+	// 		} else {
+	// 			// expose the user to the template
+	// 			res.locals.user = user;
+
+	// render the home page
+	// console.log("Cookies: ", req.cookies)
+	Item.find({
+		ownerID: req.user._id
+	}, function(err, docs) {
+		/// First sets the model object
+		var activeItems = docs.filter(function(obj) {
+			return obj.archived === false;
 		});
-	} else {
-		res.redirect('/login');
-	}
+		// Open items
+		model.openItems = activeItems.filter(function(obj) {
+			return obj.completed === false;
+		});
+		// Completed items
+		model.completedItems = activeItems.filter(function(obj) {
+			return obj.completed === true;
+		});
+		// Archived items
+		model.archivedItems = docs.filter(function(obj) {
+			return obj.archived === true;
+		});
+
+		// Reverse the completed items array, so that recent items appear first
+		// model.completedItems.reverse();
+		// Actually renders and sends the page, with the model object as the data
+		res.render('index', model);
+	});
+	// 		}
+	// 	});
+	// } else {
+	// res.redirect('/login');
+	// }
 
 
 });
@@ -224,8 +252,9 @@ app.get('*', function(req, res) {
 
 // Client connection event and content
 io.on('connection', function(client) {
-	console.log(model);
+	// console.log(model);
 	console.log('Websocket connected...');
+	// console.log(locals);
 
 	// syncModels(from, to);
 
@@ -254,6 +283,8 @@ io.on('connection', function(client) {
 
 	// Item edit event
 	client.on('itemEdit', function(data) {
+		io.emit('itemEdited', data);
+		// client.broadcast.emit('coopItemEdited', data);
 		Item.update({
 			_id: data._id
 		}, {
@@ -265,8 +296,6 @@ io.on('connection', function(client) {
 				console.log("Error", err);
 			} else {
 				console.log("item updated.", data);
-				io.emit('itemEdited', data);
-				// client.broadcast.emit('coopItemEdited', data);
 			}
 		});
 	});
@@ -357,3 +386,12 @@ function genID() {
 	console.log(chars.length);
 	return string;
 }
+
+
+function requireLogin(req, res, next) {
+	if (!req.user) {
+		res.redirect('/login');
+	} else {
+		next();
+	}
+};
