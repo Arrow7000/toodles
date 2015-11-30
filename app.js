@@ -179,6 +179,7 @@ io.on('connection', function(client) {
 
 	// Item edit event
 	client.on('itemEdit', function(data) {
+		io.emit('itemEdited', data);
 		Item.update({
 			_id: data._id
 		}, {
@@ -190,8 +191,6 @@ io.on('connection', function(client) {
 				console.log("Error", err);
 			} else {
 				console.log("item updated.", data);
-				io.emit('itemEdited', data);
-				// client.broadcast.emit('coopItemEdited', data);
 			}
 		});
 	});
