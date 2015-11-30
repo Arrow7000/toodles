@@ -56,11 +56,6 @@ var userSchema = mongoose.Schema({
 // Applying the above schema to 'User' model
 var User = mongoose.model('User', userSchema);
 
-// User.create({
-// 	username: "arrow7000",
-//  password: "hi"
-// });
-
 
 /// Server configuration (only when database connection is complete)
 
@@ -72,12 +67,35 @@ app.set('views', __dirname + '/views')
 app.set('view engine', 'jade');
 
 // Use cookie-parser
-app.use(cookieParser());
+// app.use(cookieParser());
 
 // Use body parser
 app.use(bodyParser.urlencoded({
 	extended: false
 }));
+
+
+
+
+// var session = expressSession({
+// 	cookieName: 'session',
+// 	secret: "3oajbycfzh04m3ng99a71qot",
+// 	duration: 30 * 60 * 1000,
+// 	activeDuration: 5 * 60 * 1000,
+// });
+// app.use(session);
+
+// io.use(function(socket, next) {
+// 	var handshake = socket.handshake;
+// 	if (handshake.headers.cookie) {
+// 		var str = handshake.headers.cookie;
+// 		next();
+// 	} else {
+// 		next(new Error('Missing Cookies'));
+// 	}
+// });
+
+
 
 
 
@@ -88,6 +106,11 @@ app.use(session({
 	duration: 30 * 60 * 1000,
 	activeDuration: 5 * 60 * 1000,
 }));
+
+
+
+
+
 
 
 // Send & response function
@@ -224,21 +247,15 @@ app.get('/', requireLogin, function(req, res) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 // All other paths result in 404
 app.get('*', function(req, res) {
 	res.status(404).sendFile(__dirname + '/404.html');
 });
+
+
+
+
+
 
 
 
@@ -259,6 +276,7 @@ io.on('connection', function(client) {
 	// syncModels(from, to);
 
 	// client.emit('connectionUpdate', model);
+	console.log(client.request.headers.cookie);
 
 
 	// Item save event
