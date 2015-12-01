@@ -427,10 +427,12 @@ function requireLogin(req, res, next) {
 function senderID(client, secret) {
 	try {
 		var sessionCookieString = client.request.headers.cookie.split("session=")[1];
+		console.log("sessionCookieString: ", sessionCookieString);
 		var user = session.util.decode({
 			cookieName: "session",
 			secret: secret
 		}, sessionCookieString);
+		console.log("user: ", user);
 
 		// console.log("Cookie stored: Username: ", user.content.user.username);
 		console.log("Cookie stored: User ID: ", user.content.user._id);
