@@ -98,14 +98,14 @@ app.use(bodyParser.urlencoded({
 
 
 
-
-
-app.use(session({
+var sessCookie = session({
 	cookieName: 'session',
 	secret: "3oajbycfzh04m3ng99a71qot",
 	duration: 30 * 60 * 1000,
 	activeDuration: 5 * 60 * 1000,
-}));
+});
+
+app.use(sessCookie);
 
 
 
@@ -262,9 +262,6 @@ app.get('*', function(req, res) {
 
 
 
-
-
-
 /// Websocket connections and item change events
 
 // Client connection event and content
@@ -276,8 +273,16 @@ io.on('connection', function(client) {
 	// syncModels(from, to);
 
 	// client.emit('connectionUpdate', model);
-	console.log(client.request.headers.cookie);
 
+	var user = session.util.decode({
+		cookieName: "session",
+		secret: "3oajbycfzh04m3ng99a71qot"
+	}, client.request.headers.cookie.split("session=")[1]);
+
+	console.log("User ID: ", user.content.user._id);
+
+
+	// console.log(session.util.decode);
 
 	// Item save event
 	client.on('newItemSave', function(data) {
