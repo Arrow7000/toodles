@@ -83,7 +83,8 @@ html {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   box-sizing: border-box;
-  background-color: #efefef;
+  background-color: #22313f;
+  color: #fefefe;
 }
 *,
 *:before,
@@ -105,7 +106,7 @@ html {
 }
 @media (min-width: 1240px) {
   .outer-container {
-    width: 760px;
+    width: 65%;
   }
 }
 .header {
@@ -152,15 +153,21 @@ h3#connection-status.disconnected {
   transition: background-color 0.5s ease-in, width 0.5s ease-in, padding-left 0.5s ease-in, padding-right 0.5s ease-in, max-height 0.5s 0.5s ease-in, padding-top 0.5s 0.5s ease-in, padding-bottom 0.5s 0.5s ease-in, margin-bottom 0.6s 0.5s ease-in;
 }
 .item-container .item .item-section.item-label {
-  background-color: #639;
+  background-color: #4b77be;
+  color: #fefefe;
   width: 65%;
   float: left;
-  text-align: left;
+  text-align: center;
   padding-top: 25px;
   padding-bottom: 25px;
   padding-right: 25px;
   padding-left: 25px;
   white-space: nowrap;
+}
+@media (min-width: 820px) {
+  .item-container .item .item-section.item-label {
+    width: 77.5%;
+  }
 }
 .item-container .item .item-section.item-label:empty:last-child:before {
   content: "Add an item";
@@ -175,14 +182,24 @@ h3#connection-status.disconnected {
   background-color: #26a65b;
   float: left;
 }
+@media (min-width: 820px) {
+  .item-container .item .item-section.item-tick {
+    width: 15%;
+  }
+}
 .item-container .item .item-section.item-del {
   width: 10%;
-  background-color: #d2527f;
+  background-color: #96281b;
   float: left;
+}
+@media (min-width: 820px) {
+  .item-container .item .item-section.item-del {
+    width: 7.5%;
+  }
 }
 .item-container .item.empty .item-label {
   width: 100%;
-  background-color: rgba(102,51,153,0.25);
+  background-color: rgba(75,119,190,0.25);
 }
 .item-container .item.empty .item-tick {
   width: 0;
@@ -234,7 +251,7 @@ h3#connection-status.disconnected {
 }
 .item-container#completed-item-container .item-section.item-label,
 .item-container#archived-item-container .item-section.item-label {
-  background-color: rgba(102,51,153,0.5);
+  background-color: rgba(75,119,190,0.5);
   width: 70%;
 }
 .item-container#completed-item-container .item-section.item-tick,
@@ -248,7 +265,7 @@ h3#connection-status.disconnected {
 }
 .item-container#completed-item-container .item-section.item-del,
 .item-container#archived-item-container .item-section.item-del {
-  background-color: rgba(210,82,127,0.5);
+  background-color: rgba(150,40,27,0.5);
   width: 10%;
 }
 .item-container#completed-item-container .item-section.item-del i.fa.fa-times:before,

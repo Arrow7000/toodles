@@ -105,17 +105,18 @@ textarea {
    ========================================================================== */
 
 // Variables
-$item-label-color=#663399;
+$item-label-color=#4B77BE;
 $item-tick-color=#26A65B;
-$item-del-color=#D2527F;
-$page-back=#efefef;
+$item-del-color=#96281B;
+$page-back=#22313F;
 html {
     font-family: 'PT Sans', sans-serif;
     font-size 140%;
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
-    background-color $page-back
+    background-color $page-back;
+    color: #fefefe;
 }
 
 body {
@@ -137,7 +138,7 @@ body {
         width 80%;
     }
     @media (min-width 1240px) {
-        width 760px;
+        width 65%;
     }
 }
 
@@ -177,8 +178,9 @@ h3#connection-status {
     .item {
         // margin-bottom 25px;
         width 100%;
-        color: #fefefe;
         // transition: all 0.5s ease-out;
+        // color: $page-back;
+        color: #fefefe;
         display block;
         text-align center;
         overflow: hidden;
@@ -192,9 +194,14 @@ h3#connection-status {
             transition: background-color 0.5s ease-in, width 0.5s ease-in, padding-left 0.5s ease-in, padding-right 0.5s ease-in, max-height 0.5s 0.5s ease-in, padding-top 0.5s 0.5s ease-in, padding-bottom 0.5s 0.5s ease-in, margin-bottom 0.6s 0.5s ease-in;
             &.item-label {
                 background-color $item-label-color;
+                color: #fefefe;
+                // color $page-back; 
                 width 65%;
+                @media (min-width 820px) {
+                    width 77.5%;
+                }
                 float: left;
-                text-align left;
+                text-align center;
                 padding-top 25px;
                 padding-bottom 25px;
                 padding-right 25px;
@@ -215,11 +222,17 @@ h3#connection-status {
             }
             &.item-tick {
                 width 25%;
+                @media (min-width 820px) {
+                    width 15%;
+                }
                 background-color $item-tick-color;
                 float: left;
             }
             &.item-del {
                 width 10%;
+                @media (min-width 820px) {
+                    width 7.5%;
+                }
                 // background-color $page-back;
                 background-color $item-del-color;
                 float: left;
