@@ -105,10 +105,10 @@ textarea {
    ========================================================================== */
 
 // Variables
-$item-label-color=#4B77BE;
-$item-tick-color=#26A65B;
-$item-del-color=#96281B;
-$page-back=#22313F;
+$item-label-color=#2196F3;
+$item-tick-color=#00C853;
+$item-del-color=#1976D2;
+$page-back=#BBDEFB;
 html {
     font-family: 'PT Sans', sans-serif;
     font-size 140%;
@@ -116,11 +116,12 @@ html {
     -moz-box-sizing: border-box;
     box-sizing: border-box;
     background-color $page-back;
-    color: #fefefe;
+    color: #fff;
 }
 
 body {
     // overflow-y hidden;
+    color alpha(#000, 0.87);
 }
 
 *,
@@ -138,7 +139,7 @@ body {
         width 80%;
     }
     @media (min-width 1240px) {
-        width 65%;
+        width 60%;
     }
 }
 
@@ -163,15 +164,15 @@ body {
 }
 
 h3#connection-status {
-    &.connecting {
-        color blue;
-    }
-    &.connected {
-        color green;
-    }
-    &.disconnected {
-        color red;
-    }
+    // &.connecting {
+    //     color blue;
+    // }
+    // &.connected {
+    //     color green;
+    // }
+    // &.disconnected {
+    //     color red;
+    // }
 }
 
 .item-container {
@@ -191,7 +192,7 @@ h3#connection-status {
             overflow: hidden;
             max-height 100px;
             margin-bottom 25px;
-            transition: background-color 0.5s ease-in, width 0.5s ease-in, padding-left 0.5s ease-in, padding-right 0.5s ease-in, max-height 0.5s 0.5s ease-in, padding-top 0.5s 0.5s ease-in, padding-bottom 0.5s 0.5s ease-in, margin-bottom 0.6s 0.5s ease-in;
+            transition: color 0.3s, background-color 0.5s ease-in, width 0.5s ease-in, padding-left 0.5s ease-in, padding-right 0.5s ease-in, max-height 0.5s 0.5s ease-in, padding-top 0.5s 0.5s ease-in, padding-bottom 0.5s 0.5s ease-in, margin-bottom 0.6s 0.5s ease-in;
             &.item-label {
                 background-color $item-label-color;
                 color: #fefefe;
@@ -201,7 +202,7 @@ h3#connection-status {
                     width 77.5%;
                 }
                 float: left;
-                text-align center;
+                text-align left;
                 padding-top 25px;
                 padding-bottom 25px;
                 padding-right 25px;
@@ -241,7 +242,9 @@ h3#connection-status {
         &.empty {
             .item-label {
                 width 100%;
-                background-color alpha($item-label-color, 0.25);
+                // background-color alpha($item-label-color, 0.25);
+                background-color #90CAF9;
+                color alpha(#000, 0.87);
             }
             .item-tick {
                 width 0;

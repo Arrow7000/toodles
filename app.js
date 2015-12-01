@@ -34,7 +34,8 @@ var itemSchema = mongoose.Schema({
 	title: String,
 	completed: Boolean,
 	archived: Boolean,
-	ownerID: String
+	ownerID: String,
+	timeStored: Date
 }, {
 	collection: 'items',
 	versionKey: false
@@ -97,10 +98,11 @@ app.use(bodyParser.urlencoded({
 
 
 
+var secret = "3oajbycfzh04m3ng99a71qot";
 
 var sessCookie = session({
 	cookieName: 'session',
-	secret: "3oajbycfzh04m3ng99a71qot",
+	secret: secret,
 	duration: 30 * 60 * 1000,
 	activeDuration: 5 * 60 * 1000,
 });
@@ -211,7 +213,7 @@ app.get('/', requireLogin, function(req, res) {
 	// console.log("Cookies: ", req.cookies)
 	Item.find({
 		ownerID: req.user._id
-	}, function(err, docs) {
+	}).sort('timeStored').exec(function(err, docs) {
 		/// First sets the model object
 		var activeItems = docs.filter(function(obj) {
 			return obj.archived === false;
@@ -275,17 +277,7 @@ io.on('connection', function(client) {
 	// client.emit('connectionUpdate', model);
 	// console.log(model);
 
-	try {
-		var sessionCookieString = client.request.headers.cookie.split("session=")[1];
-		var user = session.util.decode({
-			cookieName: "session",
-			secret: "3oajbycfzh04m3ng99a71qot"
-		}, sessionCookieString);
 
-		console.log("Cookie stored: Username: ", user.content.user.username);
-	} catch (err) {
-		console.log("No cookie stored.");
-	}
 
 
 
@@ -293,20 +285,27 @@ io.on('connection', function(client) {
 	// Item save event
 	client.on('newItemSave', function(data) {
 		console.log('Item submitted: ', data);
+		// console.log("Sender ID: ", senderID(client, secret));
 		Item.create({
 			title: data.title,
 			completed: false,
-			archived: false
+			archived: false,
+			ownerID: senderID(client, secret),
+			timeStored: Date.now()
+
 		}, function(err, result) {
 			if (err) return handleError(err);
 			console.log('Saved: ', data);
-			console.log("Result ID: ", result.id);
+			console.log("Result ID: ", result._id);
 			io.emit('newItemSaved', {
-				title: data.title,
-				_id: result.id,
-				index: data.index,
-				tempID: data.tempID
-			});
+					title: data.title,
+					_id: result.id,
+					index: data.index,
+					tempID: data.tempID,
+					ownerID: senderID(client, secret),
+				}
+				// result
+			);
 		});
 	});
 
@@ -424,3 +423,19 @@ function requireLogin(req, res, next) {
 		next();
 	}
 };
+
+function senderID(client, secret) {
+	try {
+		var sessionCookieString = client.request.headers.cookie.split("session=")[1];
+		var user = session.util.decode({
+			cookieName: "session",
+			secret: secret
+		}, sessionCookieString);
+
+		// console.log("Cookie stored: Username: ", user.content.user.username);
+		console.log("Cookie stored: User ID: ", user.content.user._id);
+		return user.content.user._id;
+	} catch (err) {
+		console.log("No cookie stored.");
+	}
+}

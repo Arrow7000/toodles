@@ -158,8 +158,9 @@ $(document).ready(function() {
 
 	// Feedback from server that item save is successful
 	server.on('newItemSaved', function(data) {
+		console.log(data);
 		var item = $(document).find('[data-temp-id="' + data.tempID + '"]');
-		// console.log(item);
+		console.log(data.tempID);
 		if (item.length === 0) {
 			newItemAppear(itemContainer, true, true, data.title, data._id);
 		} else {
@@ -173,22 +174,26 @@ $(document).ready(function() {
 
 
 	server.on('itemEdited', function(data) {
-		var item = $(document).find('[data-item-id="' + data._id + '"]');
-		var giver = $(document).find('[data-temp-id="' + data.tempID + '"]');
-		var label = item.find('.item-label');
-
-		if (giver.length === 0) {
-			makeEditable(item, false);
-			label.text(data.title);
-			console.log("This is receiving");
-			setTimeout(function() {
-				makeEditable(item, true);
-			}, 1000);
-		} else {
-			// item.removeAttr('data-temp-id');
-			console.log("This is giving");
+		if (data._id.length > 0) { // Checks if item has an ID at all
+			var item = $(document).find('[data-item-id="' + data._id + '"]');
+			var giver = $(document).find('[data-temp-id="' + data.tempID + '"]');
+			// console.log(giver);
+			// console.log("giver.length: ", giver.length);
+			// console.log("item: ", item, "data._id", data._id, "item.length", item.length, "data._id.length: ", data._id.length);
+			var label = item.find('.item-label');
+			if (giver.length === 0) { // If this is not the giver
+				makeEditable(item, false);
+				label.text(data.title);
+				console.log("This is receiving");
+				setTimeout(function() {
+					makeEditable(item, true);
+				}, 1000);
+			} else {
+				// item.removeAttr('data-temp-id');
+				console.log("This is giving");
+			}
+			console.log("Item edited", data);
 		}
-		console.log("Item edited", data);
 	});
 
 
@@ -238,6 +243,9 @@ $(document).ready(function() {
 		if (!item.hasClass('deleted')) {
 			item.addClass('deleted');
 		}
+		setTimeout(function() {
+			item.remove();
+		}, 1000);
 		console.log("Item deleted: ", data.title);
 	});
 
@@ -258,32 +266,41 @@ $(document).ready(function() {
 
 	// What happens every time user presses a key (should be invoked above)
 	function typeEvent(that) {
-		var label = $(that);
+		var label = $(that); 
 		var item = $(that).parent();
 		var nextItem = item.next('.item');
-		// console.log(caret(label));
+
+		console.log("label.text().length: ", label.text().length);
 		// what happens when field has text in it
 		if (label.text().length > 0) {
 			item.removeClass('empty');
-			itemEdit(item);
-			if (item.is(':last-child')) {
+			console.log("item.attr('data-item-stored'): ", item.attr('data-item-stored'));
+			if (item.is(":last-child")) {
 				newItemAppear(itemContainer, true, true);
 				newItemSave(item);
 			}
+			itemEdit(item);
 		} else {
 			if (nextItem.is(':last-child')) {
 				item.addClass('empty');
-				nextItem.removeClass('appear').addClass('disappear');
+				itemDisappear(item);
 
-				setTimeout(function() {
-					nextItem.remove();
-				}, 500);
+
 			}
 		}
 	}
 
 	/*	
 	Logic for typing in item-labels:
+
+
+		When typing in a new field, save that item.
+		When typing in an existing field, edit that item. 
+		When field typing in is the last one, generate new item underneath. When any item apart from the penultimate one is emptied of text, delete it. 
+		If penultimate item is emptied, just mark it as blank and remove stored-data and item-id. 
+		There should always be one item at the end of the list that is empty. The last item shouldn't be able to be emptied, because as soon as it gets any text another item should get generated underneath it.
+		
+
 
 		if: has text:
 			class shouldn't contain 'empty'
@@ -293,6 +310,7 @@ $(document).ready(function() {
 			if: item is penultimate:
 				add 'empty' class
 				remove next item
+
 	*/
 
 
@@ -318,7 +336,7 @@ $(document).ready(function() {
 		var tempID = that.attr('data-temp-id');
 		// console.log("New item's tempID: " + tempID);
 
-		console.log("Saving new item: ", content);
+		console.log("Saving new item: ", content, "tempID: ", tempID);
 		server.emit('newItemSave', {
 			title: content,
 			tempID: tempID,
@@ -422,6 +440,9 @@ $(document).ready(function() {
 
 	function itemDisappear(item) {
 		item.removeClass('appear').addClass('disappear');
+		setTimeout(function() {
+			item.next('.item').remove();
+		}, 500);
 	}
 
 
