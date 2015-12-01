@@ -299,7 +299,7 @@ io.on('connection', function(client) {
 			console.log("Result ID: ", result._id);
 			io.emit('newItemSaved', {
 					title: data.title,
-					_id: result.id,
+					_id: result._id,
 					index: data.index,
 					tempID: data.tempID,
 					ownerID: senderID(client, secret),
