@@ -272,17 +272,23 @@ io.on('connection', function(client) {
 
 	// syncModels(from, to);
 
-	client.emit('connectionUpdate', model);
+	// client.emit('connectionUpdate', model);
+	// console.log(model);
 
-	var user = session.util.decode({
-		cookieName: "session",
-		secret: "3oajbycfzh04m3ng99a71qot"
-	}, client.request.headers.cookie.split("session=")[1]);
+	try {
+		var sessionCookieString = client.request.headers.cookie.split("session=")[1];
+		var user = session.util.decode({
+			cookieName: "session",
+			secret: "3oajbycfzh04m3ng99a71qot"
+		}, sessionCookieString);
 
-	console.log("User ID: ", user.content.user._id);
+		console.log("Cookie stored: Username: ", user.content.user.username);
+	} catch (err) {
+		console.log("No cookie stored.");
+	}
 
 
-	// console.log(session.util.decode);
+
 
 	// Item save event
 	client.on('newItemSave', function(data) {
