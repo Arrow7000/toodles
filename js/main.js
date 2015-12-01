@@ -178,9 +178,9 @@ $(document).ready(function() {
 		var label = item.find('.item-label');
 
 		if (giver.length === 0) {
+			makeEditable(item, false);
 			label.text(data.title);
 			console.log("This is receiving");
-			makeEditable(item, false);
 			setTimeout(function() {
 				makeEditable(item, true);
 			}, 1000);
@@ -188,7 +188,6 @@ $(document).ready(function() {
 			// item.removeAttr('data-temp-id');
 			console.log("This is giving");
 		}
-
 		console.log("Item edited", data);
 	});
 

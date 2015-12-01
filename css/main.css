@@ -312,6 +312,21 @@ h3#connection-status.disconnected {
 .archived-items #archived-item-container>.item>.item-section.item-del {
   width: 0;
 }
+.login-box {
+  background-color: #fff;
+  width: 80%;
+  margin: 0 auto;
+  padding: 45px;
+}
+.login-box label,
+.login-box input {
+  display: block;
+  margin: auto;
+  width: 100%;
+}
+.login-box label {
+  text-align: center;
+}
 /* ==========================================================================
    Helper classes
    ========================================================================== */
