@@ -379,19 +379,42 @@ h3#connection-status {
 }
 
 .login-box {
-    background-color white;
+    background-color $item-label-color;
+    color alpha(#fff, 0.87);
     // height: 200px;
     width: 80%;
     margin 0 auto;
     padding 45px;
+    max-width: 600px;
     label,
     input {
         display block;
         margin auto;
+        // margin-top 15px;
+        margin-bottom 15px;
         width: 100%;
-    }
-    label {
+        border none;
         text-align center;
+    }
+    input {
+        background $page-back;
+        color alpha(#000, 0.87);
+        padding 10px;
+    }
+    input[type="submit"] {
+        background-color $item-tick-color;
+        padding 15px;
+        margin-bottom 0;
+        margin-top 30px;
+        color alpha(#fff, 0.87);
+    }
+    @media (max-width 568px) {
+        width 100%;
+        padding-left: 0;
+        padding-right: 0;
+        input {
+            width 100%;
+        }
     }
 }
 
