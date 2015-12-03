@@ -26,8 +26,6 @@ mongoose.connect('mongodb://heroku_bksj92g6:77ehmrlo36tj9hl2jae87kdohv@ds051524.
 		console.log("Connected to DB");
 	}
 });
-// Abbrev.
-// var db = mongoose.connection;
 
 // Defining an item schema and assigning to collection
 var itemSchema = mongoose.Schema({
@@ -67,34 +65,12 @@ app.use("/css", express.static(__dirname + "/css"));
 app.set('views', __dirname + '/views')
 app.set('view engine', 'jade');
 
-// Use cookie-parser
-// app.use(cookieParser());
-
 // Use body parser
 app.use(bodyParser.urlencoded({
 	extended: false
 }));
 
 
-
-
-// var session = expressSession({
-// 	cookieName: 'session',
-// 	secret: "3oajbycfzh04m3ng99a71qot",
-// 	duration: 30 * 60 * 1000,
-// 	activeDuration: 5 * 60 * 1000,
-// });
-// app.use(session);
-
-// io.use(function(socket, next) {
-// 	var handshake = socket.handshake;
-// 	if (handshake.headers.cookie) {
-// 		var str = handshake.headers.cookie;
-// 		next();
-// 	} else {
-// 		next(new Error('Missing Cookies'));
-// 	}
-// });
 
 
 

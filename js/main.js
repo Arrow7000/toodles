@@ -266,7 +266,7 @@ $(document).ready(function() {
 
 	// What happens every time user presses a key (should be invoked above)
 	function typeEvent(that) {
-		var label = $(that); 
+		var label = $(that);
 		var item = $(that).parent();
 		var nextItem = item.next('.item');
 
